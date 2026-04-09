@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-center-radar.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"addqi.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post"},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Cocos Creator Animation 组件速查笔记 Animation 组件是 Cocos Creator 中驱动动画的核心。它不仅能制作序列帧动画（切换图片），还可以制作属性动画，控制节点或组件上任意属性（位置、缩放、颜色、不透明度等）随时间变化。   一、动画制作流程1. 创建 Animation 组件与 AnimationClip添加组件  在场景中选中一个节点（通常作为动画“根节">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cocos Creator Animation 组件速查笔记">
+<meta property="og:url" content="https://addqi.github.io/2025/11/20/cocos%E5%AD%A6%E4%B9%A0/%E5%8A%A8%E7%94%BB%E7%BC%96%E8%AF%91%E5%99%A8/index.html">
+<meta property="og:site_name" content="addqi的游戏开发之旅">
+<meta property="og:description" content="Cocos Creator Animation 组件速查笔记 Animation 组件是 Cocos Creator 中驱动动画的核心。它不仅能制作序列帧动画（切换图片），还可以制作属性动画，控制节点或组件上任意属性（位置、缩放、颜色、不透明度等）随时间变化。   一、动画制作流程1. 创建 Animation 组件与 AnimationClip添加组件  在场景中选中一个节点（通常作为动画“根节">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-11-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-09T11:17:40.124Z">
+<meta property="article:author" content="addqi">
+<meta property="article:tag" content="游戏开发">
+<meta property="article:tag" content="Cocos Creator">
+<meta property="article:tag" content="动画系统">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://addqi.github.io/2025/11/20/cocos%E5%AD%A6%E4%B9%A0/%E5%8A%A8%E7%94%BB%E7%BC%96%E8%AF%91%E5%99%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Cocos Creator Animation 组件速查笔记 | addqi的游戏开发之旅</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">addqi的游戏开发之旅</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>resources</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://addqi.github.io/2025/11/20/cocos%E5%AD%A6%E4%B9%A0/%E5%8A%A8%E7%94%BB%E7%BC%96%E8%AF%91%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="addqi">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="addqi的游戏开发之旅">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Cocos Creator Animation 组件速查笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2025-11-20 10:00:00" itemprop="dateCreated datePublished" datetime="2025-11-20T10:00:00+08:00">2025-11-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-04-09 19:17:40" itemprop="dateModified" datetime="2026-04-09T19:17:40+08:00">2026-04-09</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Cocos-Creator-Animation-组件速查笔记"><a href="#Cocos-Creator-Animation-组件速查笔记" class="headerlink" title="Cocos Creator Animation 组件速查笔记"></a>Cocos Creator Animation 组件速查笔记</h1><blockquote>
+<p><strong>Animation 组件</strong>是 Cocos Creator 中驱动动画的核心。<br>它不仅能制作<strong>序列帧动画</strong>（切换图片），还可以制作<strong>属性动画</strong>，控制节点或组件上任意属性（位置、缩放、颜色、不透明度等）随时间变化。</p>
+</blockquote>
+<hr>
+<h2 id="一、动画制作流程"><a href="#一、动画制作流程" class="headerlink" title="一、动画制作流程"></a>一、动画制作流程</h2><h3 id="1-创建-Animation-组件与-AnimationClip"><a href="#1-创建-Animation-组件与-AnimationClip" class="headerlink" title="1. 创建 Animation 组件与 AnimationClip"></a>1. 创建 Animation 组件与 AnimationClip</h3><p><strong>添加组件</strong></p>
+<ul>
+<li>在场景中选中一个节点（通常作为动画“根节点”）</li>
+<li>属性检查器 → <strong>添加组件</strong> → <strong>其他组件</strong> → <strong>Animation</strong></li>
+</ul>
+<p><strong>创建 AnimationClip</strong></p>
+<ul>
+<li>在 Animation 组件面板中点击 <strong>新建 AnimationClip</strong></li>
+<li>会生成一个 <code>.anim</code> 文件，用于存储动画数据</li>
+</ul>
+<p><strong>根节点原则</strong></p>
+<ul>
+<li>如果动画涉及多个子节点</li>
+<li>通常创建一个<strong>空节点</strong>作为根节点并挂载 Animation</li>
+<li>其下所有子节点属性都可以被动画控制</li>
+</ul>
+<hr>
+<h3 id="2-编辑帧动画（序列帧动画）"><a href="#2-编辑帧动画（序列帧动画）" class="headerlink" title="2. 编辑帧动画（序列帧动画）"></a>2. 编辑帧动画（序列帧动画）</h3><blockquote>
+<p>本质：随时间切换 <code>Sprite</code> 显示的图片</p>
+</blockquote>
+<p><strong>步骤</strong></p>
+<ol>
+<li>目标节点需要有 <code>Sprite</code> 组件</li>
+<li>打开动画编辑器</li>
+<li>在属性列表点击 <code>+</code></li>
+<li>选择：<code>cc.Sprite.spriteFrame</code></li>
+</ol>
+<p><strong>插入关键帧</strong></p>
+<ul>
+<li>将资源管理器中的 <code>SpriteFrame</code> 拖到时间轴</li>
+<li>会自动生成关键帧</li>
+</ul>
+<p><strong>调整播放节奏</strong></p>
+<ul>
+<li>修改帧间隔</li>
+<li>或直接拖拽关键帧调整时间位置</li>
+</ul>
+<hr>
+<h3 id="3-编辑属性动画"><a href="#3-编辑属性动画" class="headerlink" title="3. 编辑属性动画"></a>3. 编辑属性动画</h3><blockquote>
+<p>Animation 最强大的功能：几乎所有属性都可以动画化</p>
+</blockquote>
+<p><strong>可动画的属性示例</strong></p>
+<ul>
+<li>节点属性：<ul>
+<li><code>position</code></li>
+<li><code>scale</code></li>
+<li><code>angle</code></li>
+</ul>
+</li>
+<li>组件属性：<ul>
+<li><code>cc.Label.string</code></li>
+<li><code>cc.UIOpacity.opacity</code></li>
+<li><code>cc.Sprite.color</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>使用方式</strong></p>
+<ul>
+<li>在动画编辑器的属性列表点击 <code>+</code></li>
+<li>选择节点 &#x2F; 子节点 &#x2F; 组件上的属性</li>
+<li>在不同时间点修改属性值</li>
+<li>自动生成平滑插值过渡</li>
+</ul>
+<hr>
+<h2 id="二、程序化控制动画（TypeScript）"><a href="#二、程序化控制动画（TypeScript）" class="headerlink" title="二、程序化控制动画（TypeScript）"></a>二、程序化控制动画（TypeScript）</h2><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取 Animation 组件</span></span><br><span class="line"><span class="keyword">const</span> anim = <span class="variable language_">this</span>.<span class="property">node</span>.<span class="title function_">getComponent</span>(cc.<span class="property">Animation</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-播放与停止"><a href="#1-播放与停止" class="headerlink" title="1. 播放与停止"></a>1. 播放与停止</h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">anim.<span class="title function_">play</span>(<span class="string">&#x27;clip_name&#x27;</span>); <span class="comment">// 播放指定动画（会停止其他动画）</span></span><br><span class="line">anim.<span class="title function_">play</span>();           <span class="comment">// 播放默认动画（defaultClip）</span></span><br><span class="line"></span><br><span class="line">anim.<span class="title function_">stop</span>();           <span class="comment">// 停止所有动画</span></span><br><span class="line">anim.<span class="title function_">stop</span>(<span class="string">&#x27;clip_name&#x27;</span>); <span class="comment">// 停止指定动画</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2-暂停与恢复"><a href="#2-暂停与恢复" class="headerlink" title="2. 暂停与恢复"></a>2. 暂停与恢复</h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">anim.<span class="title function_">pause</span>();  <span class="comment">// 暂停所有动画</span></span><br><span class="line">anim.<span class="title function_">resume</span>(); <span class="comment">// 恢复所有动画</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3-平滑切换动画（CrossFade）"><a href="#3-平滑切换动画（CrossFade）" class="headerlink" title="3. 平滑切换动画（CrossFade）"></a>3. 平滑切换动画（CrossFade）</h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">anim.<span class="title function_">crossFade</span>(<span class="string">&#x27;new_clip_name&#x27;</span>, <span class="number">0.5</span>); <span class="comment">// 0.5 秒内平滑切换动画</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>常用于角色状态切换（待机 → 攻击 → 跑动），避免动画生硬切换</p>
+</blockquote>
+<hr>
+<h3 id="4-控制播放速度与循环"><a href="#4-控制播放速度与循环" class="headerlink" title="4. 控制播放速度与循环"></a>4. 控制播放速度与循环</h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> state = anim.<span class="title function_">getState</span>(<span class="string">&#x27;clip_name&#x27;</span>);</span><br><span class="line"></span><br><span class="line">state.<span class="property">speed</span> = <span class="number">2.0</span>;                <span class="comment">// 播放速度（2 倍速）</span></span><br><span class="line">state.<span class="property">wrapMode</span> = cc.<span class="property">WrapMode</span>.<span class="property">Loop</span>; <span class="comment">// 循环模式</span></span><br><span class="line">state.<span class="property">repeatCount</span> = <span class="number">3</span>;             <span class="comment">// 循环次数</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>WrapMode 常用值</strong></p>
+<ul>
+<li><code>Normal</code>：播放一次</li>
+<li><code>Loop</code>：循环播放</li>
+<li><code>PingPong</code>：往返播放</li>
+</ul>
+<hr>
+<h3 id="5-动画控制方法速查表"><a href="#5-动画控制方法速查表" class="headerlink" title="5. 动画控制方法速查表"></a>5. 动画控制方法速查表</h3><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>播放</td>
+<td><code>play([name])</code></td>
+<td>播放指定动画，默认播放 <code>defaultClip</code></td>
+</tr>
+<tr>
+<td>停止</td>
+<td><code>stop([name])</code></td>
+<td>停止指定或全部动画</td>
+</tr>
+<tr>
+<td>暂停</td>
+<td><code>pause([name])</code></td>
+<td>暂停指定或全部动画</td>
+</tr>
+<tr>
+<td>恢复</td>
+<td><code>resume([name])</code></td>
+<td>恢复指定或全部动画</td>
+</tr>
+<tr>
+<td>平滑切换</td>
+<td><code>crossFade(name, duration)</code></td>
+<td>在指定时间内淡入淡出</td>
+</tr>
+<tr>
+<td>控制速度</td>
+<td><code>getState(name).speed</code></td>
+<td>修改播放速度</td>
+</tr>
+<tr>
+<td>设置循环</td>
+<td><code>getState(name).wrapMode</code></td>
+<td>设置循环模式</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、动画事件（动画与逻辑交互）"><a href="#三、动画事件（动画与逻辑交互）" class="headerlink" title="三、动画事件（动画与逻辑交互）"></a>三、动画事件（动画与逻辑交互）</h2><h3 id="1-帧事件（Frame-Event）"><a href="#1-帧事件（Frame-Event）" class="headerlink" title="1. 帧事件（Frame Event）"></a>1. 帧事件（Frame Event）</h3><blockquote>
+<p>播放到某一帧时触发</p>
+</blockquote>
+<p><strong>在编辑器中添加</strong></p>
+<ul>
+<li>在时间轴某一帧右键</li>
+<li>选择 <strong>添加动画事件</strong></li>
+<li>设置：函数名 + 参数</li>
+</ul>
+<p><strong>脚本中接收</strong></p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 假设帧事件函数名为 onAttack，参数为 100</span></span><br><span class="line"><span class="title function_">onAttack</span>(<span class="params"><span class="attr">damageValue</span>: <span class="built_in">number</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;造成伤害：&#x27;</span>, damageValue);</span><br><span class="line">    <span class="comment">// 触发攻击、音效、特效等逻辑</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ 函数会在<strong>动画根节点</strong>上的所有组件中查找并调用</p>
+</blockquote>
+<hr>
+<h3 id="2-动画生命周期事件"><a href="#2-动画生命周期事件" class="headerlink" title="2. 动画生命周期事件"></a>2. 动画生命周期事件</h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> anim = <span class="variable language_">this</span>.<span class="title function_">getComponent</span>(cc.<span class="property">Animation</span>);</span><br><span class="line"></span><br><span class="line">anim.<span class="title function_">on</span>(cc.<span class="property">Animation</span>.<span class="property">EventType</span>.<span class="property">FINISHED</span>, <span class="function">(<span class="params"><span class="keyword">type</span>, state</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`动画 <span class="subst">$&#123;state.name&#125;</span> 播放完毕`</span>);</span><br><span class="line">    <span class="comment">// 切换状态，如回到待机动画</span></span><br><span class="line">&#125;, <span class="variable language_">this</span>);</span><br></pre></td></tr></table></figure>
+
+<p><strong>常见事件类型</strong></p>
+<ul>
+<li><code>PLAY</code></li>
+<li><code>STOP</code></li>
+<li><code>PAUSE</code></li>
+<li><code>RESUME</code></li>
+<li><code>FINISHED</code></li>
+<li><code>LASTFRAME</code></li>
+</ul>
+<hr>
+<h2 id="四、Animation-组件重要属性（检查器）"><a href="#四、Animation-组件重要属性（检查器）" class="headerlink" title="四、Animation 组件重要属性（检查器）"></a>四、Animation 组件重要属性（检查器）</h2><table>
+<thead>
+<tr>
+<th>属性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Default Clip</strong></td>
+<td>默认动画片段，调用 <code>play()</code> 时播放</td>
+</tr>
+<tr>
+<td><strong>Clips</strong></td>
+<td>动画剪辑列表，可添加多个 <code>AnimationClip</code></td>
+</tr>
+<tr>
+<td><strong>Play On Load</strong></td>
+<td>组件加载完成后是否自动播放默认动画</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="五、使用建议（经验总结）"><a href="#五、使用建议（经验总结）" class="headerlink" title="五、使用建议（经验总结）"></a>五、使用建议（经验总结）</h2><ul>
+<li><strong>状态动画（角色）</strong>：推荐 <code>crossFade</code> 切换</li>
+<li><strong>数值变化（UI）</strong>：属性动画比代码插值更直观</li>
+<li><strong>关键逻辑点</strong>：用帧事件，不要用延时</li>
+<li><strong>复杂动画</strong>：一个 Animation 控制一个“动画单元”，避免过度耦合</li>
+</ul>
+<hr>
+<p>获取动画列表<br>        &#x2F;&#x2F; 使用 getRuntimeData 获取运行时数据，安全可靠<br>        const runtimeData: any &#x3D; this.nowSpine.skeletonData.getRuntimeData?.();<br>        if (!runtimeData || !Array.isArray(runtimeData.animations)) {<br>            console.warn(“没有可用动画”);<br>            return;<br>        }</p>
+<pre><code>    const anims: string[] = runtimeData.animations.map((a: any) =&gt; a.name);
+    console.log(&quot;动画列表:&quot;, anims);
+</code></pre>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/" rel="tag"># 游戏开发</a>
+              <a href="/tags/Cocos-Creator/" rel="tag"># Cocos Creator</a>
+              <a href="/tags/%E5%8A%A8%E7%94%BB%E7%B3%BB%E7%BB%9F/" rel="tag"># 动画系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/11/19/cocos%E5%AD%A6%E4%B9%A0/%E5%8A%A8%E6%80%81%E7%BA%B9%E7%90%86%E5%90%88%E6%89%B9%E7%9A%84%E5%BD%B1%E5%93%8D/" rel="prev" title="动态纹理合批的影响">
+      <i class="fa fa-chevron-left"></i> 动态纹理合批的影响
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2025/11/21/cocos%E5%AD%A6%E4%B9%A0/%E5%A4%9A%E7%82%B9%E8%A7%A6%E6%91%B8/" rel="next" title="Cocos Creator 多点触摸笔记">
+      Cocos Creator 多点触摸笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC82MDk1OC8zNzQyOA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Cocos-Creator-Animation-%E7%BB%84%E4%BB%B6%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0"><span class="nav-number">1.</span> <span class="nav-text">Cocos Creator Animation 组件速查笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%8A%A8%E7%94%BB%E5%88%B6%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">一、动画制作流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%88%9B%E5%BB%BA-Animation-%E7%BB%84%E4%BB%B6%E4%B8%8E-AnimationClip"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. 创建 Animation 组件与 AnimationClip</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E7%BC%96%E8%BE%91%E5%B8%A7%E5%8A%A8%E7%94%BB%EF%BC%88%E5%BA%8F%E5%88%97%E5%B8%A7%E5%8A%A8%E7%94%BB%EF%BC%89"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. 编辑帧动画（序列帧动画）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E7%BC%96%E8%BE%91%E5%B1%9E%E6%80%A7%E5%8A%A8%E7%94%BB"><span class="nav-number">1.1.3.</span> <span class="nav-text">3. 编辑属性动画</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E7%A8%8B%E5%BA%8F%E5%8C%96%E6%8E%A7%E5%88%B6%E5%8A%A8%E7%94%BB%EF%BC%88TypeScript%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、程序化控制动画（TypeScript）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%92%AD%E6%94%BE%E4%B8%8E%E5%81%9C%E6%AD%A2"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. 播放与停止</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%9A%82%E5%81%9C%E4%B8%8E%E6%81%A2%E5%A4%8D"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. 暂停与恢复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%B9%B3%E6%BB%91%E5%88%87%E6%8D%A2%E5%8A%A8%E7%94%BB%EF%BC%88CrossFade%EF%BC%89"><span class="nav-number">1.2.3.</span> <span class="nav-text">3. 平滑切换动画（CrossFade）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E6%8E%A7%E5%88%B6%E6%92%AD%E6%94%BE%E9%80%9F%E5%BA%A6%E4%B8%8E%E5%BE%AA%E7%8E%AF"><span class="nav-number">1.2.4.</span> <span class="nav-text">4. 控制播放速度与循环</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%8A%A8%E7%94%BB%E6%8E%A7%E5%88%B6%E6%96%B9%E6%B3%95%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="nav-number">1.2.5.</span> <span class="nav-text">5. 动画控制方法速查表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%8A%A8%E7%94%BB%E4%BA%8B%E4%BB%B6%EF%BC%88%E5%8A%A8%E7%94%BB%E4%B8%8E%E9%80%BB%E8%BE%91%E4%BA%A4%E4%BA%92%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、动画事件（动画与逻辑交互）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%B8%A7%E4%BA%8B%E4%BB%B6%EF%BC%88Frame-Event%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">1. 帧事件（Frame Event）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%8A%A8%E7%94%BB%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%BA%8B%E4%BB%B6"><span class="nav-number">1.3.2.</span> <span class="nav-text">2. 动画生命周期事件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81Animation-%E7%BB%84%E4%BB%B6%E9%87%8D%E8%A6%81%E5%B1%9E%E6%80%A7%EF%BC%88%E6%A3%80%E6%9F%A5%E5%99%A8%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、Animation 组件重要属性（检查器）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BD%BF%E7%94%A8%E5%BB%BA%E8%AE%AE%EF%BC%88%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、使用建议（经验总结）</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="addqi"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">addqi</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/" title="https:&#x2F;&#x2F;github.com" rel="noopener" target="_blank">github</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://gitee.com/" title="https:&#x2F;&#x2F;gitee.com" rel="noopener" target="_blank">gitee</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/" title="https:&#x2F;&#x2F;blog.csdn.net" rel="noopener" target="_blank">csdn</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://space.bilibili.com/" title="https:&#x2F;&#x2F;space.bilibili.com" rel="noopener" target="_blank">bilibili</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/" title="https:&#x2F;&#x2F;www.zhihu.com" rel="noopener" target="_blank">知乎</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://juejin.im/" title="https:&#x2F;&#x2F;juejin.im" rel="noopener" target="_blank">稀土掘金</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.jianshu.com/" title="https:&#x2F;&#x2F;www.jianshu.com" rel="noopener" target="_blank">简书</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2025/10/15 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">addqi</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">28k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">26 分钟</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
