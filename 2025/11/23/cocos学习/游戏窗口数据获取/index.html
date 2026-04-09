@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-center-radar.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"addqi.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post"},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="fitNode: function (obj) {        &#x2F;&#x2F;获取屏幕分辨率        let canvasSize &#x3D; cc.view.getCanvasSize();        let canvasScale &#x3D; canvasSize.width &#x2F; canvasSize.height;        let designS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cocos Creator 游戏窗口与截图">
+<meta property="og:url" content="https://addqi.github.io/2025/11/23/cocos%E5%AD%A6%E4%B9%A0/%E6%B8%B8%E6%88%8F%E7%AA%97%E5%8F%A3%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96/index.html">
+<meta property="og:site_name" content="addqi的游戏开发之旅">
+<meta property="og:description" content="fitNode: function (obj) {        &#x2F;&#x2F;获取屏幕分辨率        let canvasSize &#x3D; cc.view.getCanvasSize();        let canvasScale &#x3D; canvasSize.width &#x2F; canvasSize.height;        let designS">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-11-23T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-09T11:17:40.149Z">
+<meta property="article:author" content="addqi">
+<meta property="article:tag" content="游戏开发">
+<meta property="article:tag" content="Cocos Creator">
+<meta property="article:tag" content="截图">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://addqi.github.io/2025/11/23/cocos%E5%AD%A6%E4%B9%A0/%E6%B8%B8%E6%88%8F%E7%AA%97%E5%8F%A3%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Cocos Creator 游戏窗口与截图 | addqi的游戏开发之旅</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">addqi的游戏开发之旅</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>resources</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://addqi.github.io/2025/11/23/cocos%E5%AD%A6%E4%B9%A0/%E6%B8%B8%E6%88%8F%E7%AA%97%E5%8F%A3%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="addqi">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="addqi的游戏开发之旅">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Cocos Creator 游戏窗口与截图
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2025-11-23 10:00:00" itemprop="dateCreated datePublished" datetime="2025-11-23T10:00:00+08:00">2025-11-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-04-09 19:17:40" itemprop="dateModified" datetime="2026-04-09T19:17:40+08:00">2026-04-09</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="fitNode-function-obj-获取屏幕分辨率-let-canvasSize-cc-view-getCanvasSize-let-canvasScale-canvasSize-width-canvasSize-height-let-designScale-720-1280-this-bg-height-1280-designScale-canvasScale"><a href="#fitNode-function-obj-获取屏幕分辨率-let-canvasSize-cc-view-getCanvasSize-let-canvasScale-canvasSize-width-canvasSize-height-let-designScale-720-1280-this-bg-height-1280-designScale-canvasScale" class="headerlink" title="  fitNode: function (obj) {        &#x2F;&#x2F;获取屏幕分辨率        let canvasSize &#x3D; cc.view.getCanvasSize();        let canvasScale &#x3D; canvasSize.width &#x2F; canvasSize.height;        let designScale &#x3D; 720 &#x2F; 1280;        this.bg.height &#x3D; 1280 * (designScale &#x2F; canvasScale);    },"></a>  fitNode: function (obj) {<br>        &#x2F;&#x2F;获取屏幕分辨率<br>        let canvasSize &#x3D; cc.view.getCanvasSize();<br>        let canvasScale &#x3D; canvasSize.width &#x2F; canvasSize.height;<br>        let designScale &#x3D; 720 &#x2F; 1280;<br>        this.bg.height &#x3D; 1280 * (designScale &#x2F; canvasScale);<br>    },</h2><h1 id="Cocos-Creator-2-x-游戏窗口与截图笔记"><a href="#Cocos-Creator-2-x-游戏窗口与截图笔记" class="headerlink" title="Cocos Creator 2.x 游戏窗口与截图笔记"></a>Cocos Creator 2.x 游戏窗口与截图笔记</h1><hr>
+<h2 id="1-游戏窗口相关-API"><a href="#1-游戏窗口相关-API" class="headerlink" title="1. 游戏窗口相关 API"></a>1. 游戏窗口相关 API</h2><table>
+<thead>
+<tr>
+<th>API &#x2F; 属性</th>
+<th>功能说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>cc.view.getVisibleSize()</code></td>
+<td>获取游戏可视区域大小（逻辑尺寸）</td>
+</tr>
+<tr>
+<td><code>cc.view.getFrameSize()</code></td>
+<td>获取游戏真实窗口尺寸（真实像素）</td>
+</tr>
+<tr>
+<td><code>CC_EDITOR</code></td>
+<td>布尔值，判断是否在编辑器环境：<code>true</code> &#x3D; 编辑器，<code>false</code> &#x3D; 运行时</td>
+</tr>
+<tr>
+<td><code>@ts-ignore</code></td>
+<td>忽略下一行的 TypeScript 报错</td>
+</tr>
+<tr>
+<td><code>asset.nativeUrl</code></td>
+<td>资源在游戏包内的真实路径</td>
+</tr>
+</tbody></table>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> viewSize = cc.<span class="property">view</span>.<span class="title function_">getVisibleSize</span>();</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`游戏逻辑尺寸: <span class="subst">$&#123;viewSize.width&#125;</span> x <span class="subst">$&#123;viewSize.height&#125;</span>`</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> frameSize = cc.<span class="property">view</span>.<span class="title function_">getFrameSize</span>();</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`窗口真实尺寸: <span class="subst">$&#123;frameSize.width&#125;</span> x <span class="subst">$&#123;frameSize.height&#125;</span>`</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="variable constant_">CC_EDITOR</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;当前在编辑器环境&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-局部截图概念"><a href="#2-局部截图概念" class="headerlink" title="2. 局部截图概念"></a>2. 局部截图概念</h2><ul>
+<li><p><strong>截图需要使用额外 Canvas</strong>，原因是引擎内部渲染机制导致不能直接读取屏幕</p>
+</li>
+<li><p><strong>主要对象</strong>：</p>
+<ul>
+<li><code>cc.RenderTexture</code> → 运行时渲染目标</li>
+<li><code>cc.Texture2D</code> → 用于保存到本地或显示的纹理</li>
+<li><code>cc.SpriteFrame.setFlipY(true)</code> → Y 轴反转纹理，保证显示正确</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="3-RenderTexture-初始化"><a href="#3-RenderTexture-初始化" class="headerlink" title="3. RenderTexture 初始化"></a>3. RenderTexture 初始化</h2><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="property">rTexture</span> = <span class="keyword">new</span> cc.<span class="title class_">RenderTexture</span>();</span><br><span class="line"><span class="variable language_">this</span>.<span class="property">rTexture</span>.<span class="title function_">initWithSize</span>(</span><br><span class="line">    cc.<span class="property">visibleRect</span>.<span class="property">width</span>, </span><br><span class="line">    cc.<span class="property">visibleRect</span>.<span class="property">height</span>, </span><br><span class="line">    cc.<span class="property">RenderTexture</span>.<span class="property">DepthStencilFormat</span>.<span class="property">RB_FMT_D24S8</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>RB_FMT_D24S8</code> 有 3 种类型可选（深度模板格式）：</p>
+<ul>
+<li><code>D24S8</code></li>
+<li><code>D16</code></li>
+<li><code>None</code></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="4-从触摸位置绘制截图"><a href="#4-从触摸位置绘制截图" class="headerlink" title="4. 从触摸位置绘制截图"></a>4. 从触摸位置绘制截图</h2><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="property">node</span>.<span class="title function_">on</span>(cc.<span class="property">Node</span>.<span class="property">EventType</span>.<span class="property">TOUCH_START</span>, <span class="function">(<span class="params"><span class="attr">event</span>: cc.<span class="title class_">Event</span>.<span class="title class_">EventTouch</span></span>)=&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">var</span> pos = <span class="variable language_">this</span>.<span class="property">node</span>.<span class="title function_">convertToNodeSpaceAR</span>(event.<span class="title function_">getLocation</span>());</span><br><span class="line">    <span class="keyword">var</span> texture = <span class="keyword">new</span> cc.<span class="title class_">Texture2D</span>();</span><br><span class="line">    texture.<span class="title function_">initWithData</span>(<span class="variable language_">this</span>.<span class="property">_data</span>, cc.<span class="property">Texture2D</span>.<span class="property">PixelFormat</span>.<span class="property">RGBA8888</span>, <span class="variable language_">this</span>.<span class="property">targetSize</span>.<span class="property">width</span>, <span class="variable language_">this</span>.<span class="property">targetSize</span>.<span class="property">height</span>);</span><br><span class="line">    <span class="keyword">var</span> _node = <span class="keyword">new</span> cc.<span class="title class_">Node</span>();</span><br><span class="line">    _node.<span class="title function_">addComponent</span>(cc.<span class="property">Sprite</span>).<span class="property">spriteFrame</span> = <span class="keyword">new</span> cc.<span class="title class_">SpriteFrame</span>(texture);</span><br><span class="line">    _node.<span class="title function_">getComponent</span>(cc.<span class="property">Sprite</span>).<span class="property">spriteFrame</span>.<span class="title function_">setFlipY</span>(<span class="literal">true</span>); <span class="comment">// 反转Y轴</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">node</span>.<span class="title function_">addChild</span>(_node);</span><br><span class="line">    _node.<span class="title function_">setPosition</span>(pos);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-局部截图流程总结"><a href="#5-局部截图流程总结" class="headerlink" title="5. 局部截图流程总结"></a>5. 局部截图流程总结</h2><ol>
+<li>创建 <code>RenderTexture</code> 并设置尺寸</li>
+<li>将 Camera 的 <code>targetTexture</code> 指向 <code>RenderTexture</code></li>
+<li>使用 <code>rt.readPixels(x, y, width, height)</code> 读取像素数据到 Buffer</li>
+<li>创建 <code>Texture2D</code> 和 <code>SpriteFrame</code> 显示截图</li>
+<li>可选：使用 <code>Canvas2Image</code> 保存到本地或导出为 PNG&#x2F;JPEG&#x2F;BMP&#x2F;GIF</li>
+</ol>
+<hr>
+<h2 id="6-保存为图片（浏览器-Native-微信小游戏示例）"><a href="#6-保存为图片（浏览器-Native-微信小游戏示例）" class="headerlink" title="6. 保存为图片（浏览器&#x2F;Native&#x2F;微信小游戏示例）"></a>6. 保存为图片（浏览器&#x2F;Native&#x2F;微信小游戏示例）</h2><h3 id="浏览器"><a href="#浏览器" class="headerlink" title="浏览器"></a>浏览器</h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="property">_canvas</span> = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&#x27;canvas&#x27;</span>);</span><br><span class="line"><span class="variable language_">this</span>.<span class="property">_canvas</span>.<span class="property">width</span> = width;</span><br><span class="line"><span class="variable language_">this</span>.<span class="property">_canvas</span>.<span class="property">height</span> = height;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> ctx = <span class="variable language_">this</span>.<span class="property">_canvas</span>.<span class="title function_">getContext</span>(<span class="string">&#x27;2d&#x27;</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> row = <span class="number">0</span>; row &lt; height; row++) &#123;</span><br><span class="line">    <span class="keyword">let</span> sRow = height - <span class="number">1</span> - row;</span><br><span class="line">    <span class="keyword">let</span> imageData = ctx.<span class="title function_">createImageData</span>(width, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">let</span> start = sRow * width * <span class="number">4</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; width * <span class="number">4</span>; i++) &#123;</span><br><span class="line">        imageData.<span class="property">data</span>[i] = arrayBuffer[start + i];</span><br><span class="line">    &#125;</span><br><span class="line">    ctx.<span class="title function_">putImageData</span>(imageData, <span class="number">0</span>, row);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用 Canvas2Image 保存 PNG</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="property">canvas2image</span>.<span class="title function_">saveAsPNG</span>(<span class="variable language_">this</span>.<span class="property">_canvas</span>, width, height);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Native-平台"><a href="#Native-平台" class="headerlink" title="Native 平台"></a>Native 平台</h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> filePath = jsb.<span class="property">fileUtils</span>.<span class="title function_">getWritablePath</span>() + <span class="string">&#x27;screenshot.png&#x27;</span>;</span><br><span class="line">jsb.<span class="title function_">saveImageData</span>(<span class="variable language_">this</span>.<span class="property">_buffer</span>, width, height, filePath).<span class="title function_">then</span>(<span class="function">()=&gt;</span>&#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`保存成功: <span class="subst">$&#123;filePath&#125;</span>`</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="微信小游戏"><a href="#微信小游戏" class="headerlink" title="微信小游戏"></a>微信小游戏</h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="property">_canvas</span>.<span class="title function_">toTempFilePath</span>(&#123;</span><br><span class="line">    <span class="attr">x</span>: <span class="number">0</span>, <span class="attr">y</span>: <span class="number">0</span>, <span class="attr">width</span>: width, <span class="attr">height</span>: height,</span><br><span class="line">    <span class="attr">destWidth</span>: width, <span class="attr">destHeight</span>: height,</span><br><span class="line">    <span class="attr">fileType</span>: <span class="string">&quot;png&quot;</span>,</span><br><span class="line">    <span class="attr">success</span>: <span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">        wx.<span class="title function_">saveImageToPhotosAlbum</span>(&#123; <span class="attr">filePath</span>: res.<span class="property">tempFilePath</span> &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="7-关键注意点"><a href="#7-关键注意点" class="headerlink" title="7. 关键注意点"></a>7. 关键注意点</h2><ol>
+<li><p><strong>Y轴反转</strong>：</p>
+<ul>
+<li>RenderTexture 读取像素时 Y 轴是倒置的</li>
+<li>使用 <code>spriteFrame.flipUVY = true</code> 修正</li>
+<li>iOS&#x2F;OSX Native 平台特殊处理，可能需要 <code>flipUVY = false</code></li>
+</ul>
+</li>
+<li><p><strong>UI显示</strong>：</p>
+<ul>
+<li>使用 <code>SpriteFrame</code> 将截图显示在任意 Node 上</li>
+<li>使用 <code>UITransform.setContentSize(width, height)</code> 设置大小</li>
+</ul>
+</li>
+<li><p><strong>Canvas 复用</strong>：</p>
+<ul>
+<li>避免重复创建 DOM Canvas，可用 <code>clearCanvas()</code> 清空再绘制</li>
+</ul>
+</li>
+<li><p><strong>跨平台兼容</strong>：</p>
+<ul>
+<li>浏览器、Native、微信小游戏的保存方式不同</li>
+<li>Canvas2Image 工具类封装了多平台方法</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="8-核心类和方法"><a href="#8-核心类和方法" class="headerlink" title="8. 核心类和方法"></a>8. 核心类和方法</h2><table>
+<thead>
+<tr>
+<th>类 &#x2F; 方法</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>cc.RenderTexture</code></td>
+<td>渲染目标纹理，可读取像素</td>
+</tr>
+<tr>
+<td><code>cc.Texture2D</code></td>
+<td>用于显示或存储纹理数据</td>
+</tr>
+<tr>
+<td><code>cc.SpriteFrame</code></td>
+<td>将纹理绑定到 Sprite，支持 flipUVY</td>
+</tr>
+<tr>
+<td><code>Camera.targetTexture</code></td>
+<td>Camera 输出到 RenderTexture</td>
+</tr>
+<tr>
+<td><code>rt.readPixels(x, y, width, height)</code></td>
+<td>获取像素数据到 buffer</td>
+</tr>
+<tr>
+<td><code>Canvas2Image</code></td>
+<td>将 Canvas 转换并保存为 PNG&#x2F;JPEG&#x2F;GIF&#x2F;BMP</td>
+</tr>
+<tr>
+<td><code>UITransform.setContentSize()</code></td>
+<td>设置节点显示尺寸</td>
+</tr>
+<tr>
+<td><code>sys.isBrowser / sys.isNative / sys.Platform.WECHAT_GAME</code></td>
+<td>判断平台</td>
+</tr>
+</tbody></table>
+<hr>
+<p>import { _decorator } from ‘cc’;<br>const { ccclass, property } &#x3D; _decorator;<br>@ccclass(‘Canvas2Image’)<br>export class Canvas2Image {<br>    public static getInstance() {<br>        &#x2F;&#x2F; check if support sth.<br>        var $support &#x3D; function () {<br>            var canvas &#x3D; document.createElement(‘canvas’),<br>                ctx &#x3D; canvas.getContext(‘2d’);</p>
+<pre><code>        return &#123;
+            canvas: !!ctx,
+            imageData: !!ctx.getImageData,
+            dataURL: !!canvas.toDataURL,
+            btoa: !!window.btoa
+        &#125;;
+    &#125;();
+
+    var downloadMime = &#39;image/octet-stream&#39;;
+
+    function scaleCanvas(canvas, width, height) &#123;
+        var w = canvas.width,
+            h = canvas.height;
+        if (width == undefined) &#123;
+            width = w;
+        &#125;
+        if (height == undefined) &#123;
+            height = h;
+        &#125;
+
+        var retCanvas = document.createElement(&#39;canvas&#39;);
+        var retCtx = retCanvas.getContext(&#39;2d&#39;);
+        retCanvas.width = width;
+        retCanvas.height = height;
+        retCtx.drawImage(canvas, 0, 0, w, h, 0, 0, width, height);
+        return retCanvas;
+    &#125;
+
+    function getDataURL(canvas, type, width, height) &#123;
+        canvas = scaleCanvas(canvas, width, height);
+        return canvas.toDataURL(type);
+    &#125;
+
+    function saveFile(strData, type, fileName) &#123;
+        // document.location.href = strData;
+        fileDownload(strData, type, fileName);
+    &#125;
+
+    function genImage(strData) &#123;
+        var img = document.createElement(&#39;img&#39;);
+        img.src = strData;
+        return img;
+    &#125;
+    function fixType(type) &#123;
+        type = type.toLowerCase().replace(/jpg/i, &#39;jpeg&#39;);
+        var r = type.match(/png|jpeg|bmp|gif/)[0];
+        return &#39;image/&#39; + r;
+    &#125;
+    function encodeData(data) &#123;
+        if (!window.btoa) &#123; throw &#39;btoa undefined&#39; &#125;
+        var str = &#39;&#39;;
+        if (typeof data == &#39;string&#39;) &#123;
+            str = data;
+        &#125; else &#123;
+            for (var i = 0; i &lt; data.length; i++) &#123;
+                str += String.fromCharCode(data[i]);
+            &#125;
+        &#125;
+
+        return btoa(str);
+    &#125;
+    function getImageData(canvas) &#123;
+        var w = canvas.width,
+            h = canvas.height;
+        return canvas.getContext(&#39;2d&#39;).getImageData(0, 0, w, h);
+    &#125;
+    function makeURI(strData, type) &#123;
+        return &#39;data:&#39; + type + &#39;;base64,&#39; + strData;
+    &#125;
+
+
+    /**
+     * create bitmap image
+     * 按照规则生成图片响应头和响应体
+     */
+    var genBitmapImage = function (oData) &#123;
+
+        //
+        // BITMAPFILEHEADER: http://msdn.microsoft.com/en-us/library/windows/desktop/dd183374(v=vs.85).aspx
+        // BITMAPINFOHEADER: http://msdn.microsoft.com/en-us/library/dd183376.aspx
+        //
+
+        var biWidth = oData.width;
+        var biHeight = oData.height;
+        var biSizeImage = biWidth * biHeight * 3;
+        var bfSize = biSizeImage + 54; // total header size = 54 bytes
+
+        //
+        //  typedef struct tagBITMAPFILEHEADER &#123;
+        //  	WORD bfType;
+        //  	DWORD bfSize;
+        //  	WORD bfReserved1;
+        //  	WORD bfReserved2;
+        //  	DWORD bfOffBits;
+        //  &#125; BITMAPFILEHEADER;
+        //
+        var BITMAPFILEHEADER = [
+            // WORD bfType -- The file type signature; must be &quot;BM&quot;
+            0x42, 0x4D,
+            // DWORD bfSize -- The size, in bytes, of the bitmap file
+            bfSize &amp; 0xff, bfSize &gt;&gt; 8 &amp; 0xff, bfSize &gt;&gt; 16 &amp; 0xff, bfSize &gt;&gt; 24 &amp; 0xff,
+            // WORD bfReserved1 -- Reserved; must be zero
+            0, 0,
+            // WORD bfReserved2 -- Reserved; must be zero
+            0, 0,
+            // DWORD bfOffBits -- The offset, in bytes, from the beginning of the BITMAPFILEHEADER structure to the bitmap bits.
+            54, 0, 0, 0
+        ];
+
+        //
+        //  typedef struct tagBITMAPINFOHEADER &#123;
+        //  	DWORD biSize;
+        //  	LONG  biWidth;
+        //  	LONG  biHeight;
+        //  	WORD  biPlanes;
+        //  	WORD  biBitCount;
+        //  	DWORD biCompression;
+        //  	DWORD biSizeImage;
+        //  	LONG  biXPelsPerMeter;
+        //  	LONG  biYPelsPerMeter;
+        //  	DWORD biClrUsed;
+        //  	DWORD biClrImportant;
+        //  &#125; BITMAPINFOHEADER, *PBITMAPINFOHEADER;
+        //
+        var BITMAPINFOHEADER = [
+            // DWORD biSize -- The number of bytes required by the structure
+            40, 0, 0, 0,
+            // LONG biWidth -- The width of the bitmap, in pixels
+            biWidth &amp; 0xff, biWidth &gt;&gt; 8 &amp; 0xff, biWidth &gt;&gt; 16 &amp; 0xff, biWidth &gt;&gt; 24 &amp; 0xff,
+            // LONG biHeight -- The height of the bitmap, in pixels
+            biHeight &amp; 0xff, biHeight &gt;&gt; 8 &amp; 0xff, biHeight &gt;&gt; 16 &amp; 0xff, biHeight &gt;&gt; 24 &amp; 0xff,
+            // WORD biPlanes -- The number of planes for the target device. This value must be set to 1
+            1, 0,
+            // WORD biBitCount -- The number of bits-per-pixel, 24 bits-per-pixel -- the bitmap
+            // has a maximum of 2^24 colors (16777216, Truecolor)
+            24, 0,
+            // DWORD biCompression -- The type of compression, BI_RGB (code 0) -- uncompressed
+            0, 0, 0, 0,
+            // DWORD biSizeImage -- The size, in bytes, of the image. This may be set to zero for BI_RGB bitmaps
+            biSizeImage &amp; 0xff, biSizeImage &gt;&gt; 8 &amp; 0xff, biSizeImage &gt;&gt; 16 &amp; 0xff, biSizeImage &gt;&gt; 24 &amp; 0xff,
+            // LONG biXPelsPerMeter, unused
+            0, 0, 0, 0,
+            // LONG biYPelsPerMeter, unused
+            0, 0, 0, 0,
+            // DWORD biClrUsed, the number of color indexes of palette, unused
+            0, 0, 0, 0,
+            // DWORD biClrImportant, unused
+            0, 0, 0, 0
+        ];
+
+        var iPadding = (4 - ((biWidth * 3) % 4)) % 4;
+
+        var aImgData = oData.data;
+
+        var strPixelData = &#39;&#39;;
+        var biWidth4 = biWidth &lt;&lt; 2;
+        var y = biHeight;
+        var fromCharCode = String.fromCharCode;
+
+        do &#123;
+            var iOffsetY = biWidth4 * (y - 1);
+            var strPixelRow = &#39;&#39;;
+            for (var x = 0; x &lt; biWidth; x++) &#123;
+                var iOffsetX = x &lt;&lt; 2;
+                strPixelRow += fromCharCode(aImgData[iOffsetY + iOffsetX + 2]) +
+                    fromCharCode(aImgData[iOffsetY + iOffsetX + 1]) +
+                    fromCharCode(aImgData[iOffsetY + iOffsetX]);
+            &#125;
+
+            for (var c = 0; c &lt; iPadding; c++) &#123;
+                strPixelRow += String.fromCharCode(0);
+            &#125;
+
+            strPixelData += strPixelRow;
+        &#125; while (--y);
+
+        var strEncoded = encodeData(BITMAPFILEHEADER.concat(BITMAPINFOHEADER)) + encodeData(strPixelData);
+
+        return strEncoded;
+    &#125;;
+
+    /**
+     * saveAsImage
+     * @param canvasElement
+     * @param &#123;String&#125; image type
+     * @param &#123;Number&#125; [optional] png width
+     * @param &#123;Number&#125; [optional] png height
+     */
+    var saveAsImage = function (canvas, width, height, type, fileName) &#123;
+        /**
+         * canvas.toBlob 的第三个参数。当请求图片格式为image/jpeg或者image/webp时用来指定图片展示质量。
+         * 如果这个参数的值不在指定类型与范围之内，则使用默认值，其余参数将被忽略。
+         * 此处暂时默认设置为 1
+         */
+        var quality = 1.0;
+        if ($support.canvas &amp;&amp; $support.dataURL) &#123;
+            if (typeof canvas == &quot;string&quot;) &#123; canvas = document.getElementById(canvas); &#125;
+            if (type == undefined) &#123; type = &#39;png&#39;; &#125;
+            type = fixType(type);
+            if (/bmp/.test(type)) &#123;
+                var data = getImageData(scaleCanvas(canvas, width, height));
+                var strData = genBitmapImage(data);
+                saveFile(makeURI(strData, downloadMime), type.replace(&quot;image/&quot;, &quot;&quot;), fileName);
+            &#125; else &#123;
+                
+                canvas = scaleCanvas(canvas, width, height);
+                // 如果
+                canvas.toBlob(function(blob)&#123;
+                    var url = URL.createObjectURL(blob);
+                    saveFile(url, type.replace(&quot;image/&quot;, &quot;&quot;), fileName);
+                &#125;, type, quality)
+            &#125;
+        &#125;
+    &#125;;
+
+    var convertToImage = function (canvas, width, height, type) &#123;
+        if ($support.canvas &amp;&amp; $support.dataURL) &#123;
+            if (typeof canvas == &quot;string&quot;) &#123; canvas = document.getElementById(canvas); &#125;
+            if (type == undefined) &#123; type = &#39;png&#39;; &#125;
+            type = fixType(type);
+
+            if (/bmp/.test(type)) &#123;
+                var data = getImageData(scaleCanvas(canvas, width, height));
+                var strData = genBitmapImage(data);
+                return genImage(makeURI(strData, &#39;image/bmp&#39;));
+            &#125; else &#123;
+                var strData: string = getDataURL(canvas, type, width, height);
+                return genImage(strData);
+            &#125;
+        &#125;
+    &#125;;
+
+    var fileDownload = function (downloadUrl, type, fileName) &#123;
+        let aLink = document.createElement(&#39;a&#39;);
+        aLink.style.display = &#39;none&#39;;
+        aLink.href = downloadUrl;
+        aLink.download = fileName + &quot;.&quot; + type;
+        // 触发点击-然后移除
+        document.body.appendChild(aLink);
+        aLink.click();
+        document.body.removeChild(aLink);
+    &#125;
+
+
+
+    return &#123;
+        saveAsImage: saveAsImage,
+        saveAsPNG: function (canvas, width, height) &#123;
+            return saveAsImage(canvas, width, height, &#39;png&#39;, &#39;defaultpng&#39;);
+        &#125;,
+        saveAsJPEG: function (canvas, width, height) &#123;
+            return saveAsImage(canvas, width, height, &#39;jpeg&#39;, &#39;defaultjpg&#39;);
+        &#125;,
+        saveAsGIF: function (canvas, width, height) &#123;
+            return saveAsImage(canvas, width, height, &#39;gif&#39;, &#39;defaultgif&#39;);
+        &#125;,
+        saveAsBMP: function (canvas, width, height) &#123;
+            return saveAsImage(canvas, width, height, &#39;bmp&#39;, &#39;defaultbmp&#39;);
+        &#125;,
+
+        convertToImage: convertToImage,
+        convertToPNG: function (canvas, width, height) &#123;
+            return convertToImage(canvas, width, height, &#39;png&#39;);
+        &#125;,
+        convertToJPEG: function (canvas, width, height) &#123;
+            return convertToImage(canvas, width, height, &#39;jpeg&#39;);
+        &#125;,
+        convertToGIF: function (canvas, width, height) &#123;
+            return convertToImage(canvas, width, height, &#39;gif&#39;);
+        &#125;,
+        convertToBMP: function (canvas, width, height) &#123;
+            return convertToImage(canvas, width, height, &#39;bmp&#39;);
+        &#125;
+    &#125;;
+&#125;
+</code></pre>
+<p>}</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/" rel="tag"># 游戏开发</a>
+              <a href="/tags/Cocos-Creator/" rel="tag"># Cocos Creator</a>
+              <a href="/tags/%E6%88%AA%E5%9B%BE/" rel="tag"># 截图</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/11/22/cocos%E5%AD%A6%E4%B9%A0/%E5%B8%B8%E7%94%A8%E7%BB%84%E4%BB%B6/" rel="prev" title="Cocos Creator 常用组件笔记">
+      <i class="fa fa-chevron-left"></i> Cocos Creator 常用组件笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2025/11/24/cocos%E5%AD%A6%E4%B9%A0/%E7%A2%B0%E6%92%9E%E7%89%A9%E7%90%86%E7%B3%BB%E7%BB%9F/" rel="next" title="Cocos 碰撞与物理系统速查笔记">
+      Cocos 碰撞与物理系统速查笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC82MDk1OC8zNzQyOA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#fitNode-function-obj-%E8%8E%B7%E5%8F%96%E5%B1%8F%E5%B9%95%E5%88%86%E8%BE%A8%E7%8E%87-let-canvasSize-cc-view-getCanvasSize-let-canvasScale-canvasSize-width-canvasSize-height-let-designScale-720-1280-this-bg-height-1280-designScale-canvasScale"><span class="nav-number">1.</span> <span class="nav-text">  fitNode: function (obj) {        &#x2F;&#x2F;获取屏幕分辨率        let canvasSize &#x3D; cc.view.getCanvasSize();        let canvasScale &#x3D; canvasSize.width &#x2F; canvasSize.height;        let designScale &#x3D; 720 &#x2F; 1280;        this.bg.height &#x3D; 1280 * (designScale &#x2F; canvasScale);    },</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Cocos-Creator-2-x-%E6%B8%B8%E6%88%8F%E7%AA%97%E5%8F%A3%E4%B8%8E%E6%88%AA%E5%9B%BE%E7%AC%94%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">Cocos Creator 2.x 游戏窗口与截图笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%B8%B8%E6%88%8F%E7%AA%97%E5%8F%A3%E7%9B%B8%E5%85%B3-API"><span class="nav-number">1.</span> <span class="nav-text">1. 游戏窗口相关 API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.1.</span> <span class="nav-text">示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%B1%80%E9%83%A8%E6%88%AA%E5%9B%BE%E6%A6%82%E5%BF%B5"><span class="nav-number">2.</span> <span class="nav-text">2. 局部截图概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-RenderTexture-%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">3. RenderTexture 初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%BB%8E%E8%A7%A6%E6%91%B8%E4%BD%8D%E7%BD%AE%E7%BB%98%E5%88%B6%E6%88%AA%E5%9B%BE"><span class="nav-number">4.</span> <span class="nav-text">4. 从触摸位置绘制截图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%B1%80%E9%83%A8%E6%88%AA%E5%9B%BE%E6%B5%81%E7%A8%8B%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">5. 局部截图流程总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E4%BF%9D%E5%AD%98%E4%B8%BA%E5%9B%BE%E7%89%87%EF%BC%88%E6%B5%8F%E8%A7%88%E5%99%A8-Native-%E5%BE%AE%E4%BF%A1%E5%B0%8F%E6%B8%B8%E6%88%8F%E7%A4%BA%E4%BE%8B%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">6. 保存为图片（浏览器&#x2F;Native&#x2F;微信小游戏示例）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8"><span class="nav-number">6.1.</span> <span class="nav-text">浏览器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Native-%E5%B9%B3%E5%8F%B0"><span class="nav-number">6.2.</span> <span class="nav-text">Native 平台</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AE%E4%BF%A1%E5%B0%8F%E6%B8%B8%E6%88%8F"><span class="nav-number">6.3.</span> <span class="nav-text">微信小游戏</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%85%B3%E9%94%AE%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="nav-number">7.</span> <span class="nav-text">7. 关键注意点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E6%A0%B8%E5%BF%83%E7%B1%BB%E5%92%8C%E6%96%B9%E6%B3%95"><span class="nav-number">8.</span> <span class="nav-text">8. 核心类和方法</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="addqi"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">addqi</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/" title="https:&#x2F;&#x2F;github.com" rel="noopener" target="_blank">github</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://gitee.com/" title="https:&#x2F;&#x2F;gitee.com" rel="noopener" target="_blank">gitee</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/" title="https:&#x2F;&#x2F;blog.csdn.net" rel="noopener" target="_blank">csdn</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://space.bilibili.com/" title="https:&#x2F;&#x2F;space.bilibili.com" rel="noopener" target="_blank">bilibili</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/" title="https:&#x2F;&#x2F;www.zhihu.com" rel="noopener" target="_blank">知乎</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://juejin.im/" title="https:&#x2F;&#x2F;juejin.im" rel="noopener" target="_blank">稀土掘金</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.jianshu.com/" title="https:&#x2F;&#x2F;www.jianshu.com" rel="noopener" target="_blank">简书</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2025/10/15 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">addqi</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">28k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">26 分钟</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
