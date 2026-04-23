@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-center-radar.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"addqi.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post"},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="面向对象：已经会写基本 Cocos Creator 3.x 组件（@ccclass &#x2F; @property &#x2F; ScrollView &#x2F; Label &#x2F; Sprite）、准备做&#x2F;改一个列表型关卡选择界面的开发者。 本文不讲具体项目业务，只讲**”如果要做一个大量关卡的选择界面，都从哪里下手优化”**。读完你应该能：  面对一个真实需求（N 很大的列表界面），指出至少 7 个潜在瓶颈 对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="游戏开发优化 · 关卡选择界面多关卡如何优化（Cocos Creator 3.x）">
+<meta property="og:url" content="https://addqi.github.io/2026/04/23/%E5%85%B3%E5%8D%A1%E9%80%89%E6%8B%A9%E7%95%8C%E9%9D%A2%E5%A4%9A%E5%85%B3%E5%8D%A1%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="addqi的游戏开发之旅">
+<meta property="og:description" content="面向对象：已经会写基本 Cocos Creator 3.x 组件（@ccclass &#x2F; @property &#x2F; ScrollView &#x2F; Label &#x2F; Sprite）、准备做&#x2F;改一个列表型关卡选择界面的开发者。 本文不讲具体项目业务，只讲**”如果要做一个大量关卡的选择界面，都从哪里下手优化”**。读完你应该能：  面对一个真实需求（N 很大的列表界面），指出至少 7 个潜在瓶颈 对">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-04-23T07:06:44.000Z">
+<meta property="article:modified_time" content="2026-04-23T07:11:55.733Z">
+<meta property="article:author" content="addqi">
+<meta property="article:tag" content="Cocos Creator">
+<meta property="article:tag" content="游戏开发">
+<meta property="article:tag" content="性能优化">
+<meta property="article:tag" content="列表优化">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://addqi.github.io/2026/04/23/%E5%85%B3%E5%8D%A1%E9%80%89%E6%8B%A9%E7%95%8C%E9%9D%A2%E5%A4%9A%E5%85%B3%E5%8D%A1%E4%BC%98%E5%8C%96/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>游戏开发优化 · 关卡选择界面多关卡如何优化（Cocos Creator 3.x） | addqi的游戏开发之旅</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">addqi的游戏开发之旅</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-articles">
+
+    <a href="/articles/" rel="section"><i class="book fa-fw"></i>技术文章</a>
+
+  </li>
+        <li class="menu-item menu-item-projects">
+
+    <a href="/projects/" rel="section"><i class="gamepad fa-fw"></i>示例项目</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://addqi.github.io/2026/04/23/%E5%85%B3%E5%8D%A1%E9%80%89%E6%8B%A9%E7%95%8C%E9%9D%A2%E5%A4%9A%E5%85%B3%E5%8D%A1%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="addqi">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="addqi的游戏开发之旅">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          游戏开发优化 · 关卡选择界面多关卡如何优化（Cocos Creator 3.x）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2026-04-23 15:06:44 / 修改时间：15:11:55" itemprop="dateCreated datePublished" datetime="2026-04-23T15:06:44+08:00">2026-04-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91%E4%BC%98%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">游戏开发优化</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>25k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>23 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>面向对象：<strong>已经会写基本 Cocos Creator 3.x 组件</strong>（<code>@ccclass / @property / ScrollView / Label / Sprite</code>）、<strong>准备做&#x2F;改一个列表型关卡选择界面</strong>的开发者。</p>
+<p>本文不讲具体项目业务，只讲**”如果要做一个大量关卡的选择界面，都从哪里下手优化”**。读完你应该能：</p>
+<ol>
+<li>面对一个真实需求（N 很大的列表界面），指出至少 7 个潜在瓶颈</li>
+<li>对每个瓶颈，说出在 Cocos 3.x 里用哪些 API 组合解决</li>
+<li>照着示例代码改出自己项目的版本</li>
+</ol>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<h2 id="0-为什么这题会难"><a href="#0-为什么这题会难" class="headerlink" title="0. 为什么这题会难"></a>0. 为什么这题会难</h2><p>一个”N 个关卡的选择界面”，N&#x3D;20 随手写都能跑。但是：</p>
+<ul>
+<li>N&#x3D;500，每个关卡要下载一份 JSON？—— 首屏等 30 秒</li>
+<li>每个关卡要渲染一张图？—— Draw Call 和 GPU 节点爆炸</li>
+<li>用户滚动浏览再回来，再次下载？—— 流量爆炸</li>
+<li>加载失败反复重试？—— 后台埋点雪崩</li>
+</ul>
+<p><strong>问题不是”写不出来”，是”写出来的东西不能上生产”。</strong></p>
+<p>下面这张表是一个典型多关卡界面<strong>至少</strong>要考虑的 7 个瓶颈：</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>瓶颈</th>
+<th>症状</th>
+<th>主要方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>渲染</strong></td>
+<td>FPS 崩、滑动卡帧</td>
+<td>虚拟列表 &#x2F; 节点复用、动态图集、Label Cache</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>内存</strong></td>
+<td>常驻 &gt;500MB、OOM</td>
+<td>保留窗回收、大数据单独管、释放 Texture</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>网络</strong></td>
+<td>首屏 5MB 下不完</td>
+<td>按需下载、分页、并发去重</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>冷启动</strong></td>
+<td>每次开游戏都重下</td>
+<td>本地缓存（localStorage &#x2F; file）、首屏预热</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>CPU 高频事件</strong></td>
+<td>滚动时主线程忙</td>
+<td>节流、冗余索引、避免空转</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>事件分发</strong></td>
+<td>一次点击触发多处逻辑</td>
+<td>事件冒泡控制、事件源判断</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>生产稳定性</strong></td>
+<td>线上偶发崩、埋点雪崩</td>
+<td>失败自愈、上报去重、fallback</td>
+</tr>
+</tbody></table>
+<p>你可能只想到”虚拟列表 + 按需下载 + 本地缓存”这三招 —— <strong>那只覆盖第 1、3、4 三个瓶颈</strong>。剩下的 4 个会在上量后把你按在地上摩擦。</p>
+<hr>
+<h2 id="1-先认识几个关键-API（新手必读）"><a href="#1-先认识几个关键-API（新手必读）" class="headerlink" title="1. 先认识几个关键 API（新手必读）"></a>1. 先认识几个关键 API（新手必读）</h2><p>下面这些是全文示例里频繁出现的 Cocos 3.x API，<strong>先眼熟</strong>。记不住没关系，<strong>知道”有这个东西”就行</strong>，用的时候回头查。</p>
+<h3 id="1-1-渲染相关"><a href="#1-1-渲染相关" class="headerlink" title="1.1 渲染相关"></a>1.1 渲染相关</h3><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; _decorator, <span class="title class_">Component</span>, <span class="title class_">Node</span>, <span class="title class_">Prefab</span>, instantiate, <span class="title class_">ScrollView</span>,</span><br><span class="line">         <span class="title class_">UITransform</span>, <span class="title class_">Sprite</span>, <span class="title class_">SpriteFrame</span>, <span class="title class_">Texture2D</span>, <span class="title class_">ImageAsset</span>,</span><br><span class="line">         <span class="title class_">Label</span>, assetManager, resources, sys &#125; <span class="keyword">from</span> <span class="string">&#x27;cc&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>ScrollView</code> — 滚动容器组件，提供 <code>scrolling / scroll-ended</code> 事件</li>
+<li><code>instantiate(prefab)</code> — 从 Prefab 克隆一个节点</li>
+<li><code>Texture2D / ImageAsset</code> — 贴图对象，可以从字节流手动构造</li>
+<li><code>Sprite + SpriteFrame</code> — 精灵渲染</li>
+<li><code>Label</code> — 文本（<strong>注意 Label 频繁变内容也卡，每次改 string 都会重建 cache</strong>）</li>
+</ul>
+<h3 id="1-2-资源与网络相关"><a href="#1-2-资源与网络相关" class="headerlink" title="1.2 资源与网络相关"></a>1.2 资源与网络相关</h3><table>
+<thead>
+<tr>
+<th>API</th>
+<th>干什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>resources.load(path, type, callback)</code></td>
+<td>从 <code>resources/</code> 加载资源（editor 内建）</td>
+</tr>
+<tr>
+<td><code>assetManager.loadRemote(url, callback)</code></td>
+<td>加载远端资源（图片 &#x2F; JSON）</td>
+</tr>
+<tr>
+<td><code>assetManager.loadBundle(name, cb)</code></td>
+<td>加载 Bundle（分包）</td>
+</tr>
+<tr>
+<td><code>sys.localStorage.setItem / getItem</code></td>
+<td>跨平台本地 KV（原生、H5、小游戏都兼容）</td>
+</tr>
+<tr>
+<td><code>new Texture2D()</code> + <code>tex.reset(&#123;width,height,format&#125;)</code> + <code>tex.uploadData(buf)</code></td>
+<td>从字节流构造贴图</td>
+</tr>
+</tbody></table>
+<p><strong>新手记住一件事</strong>：<code>resources.load</code> 只能读工程内的 <code>resources/</code> 目录；线上动态下发的 JSON 用 <code>assetManager.loadRemote</code>。别搞混。</p>
+<h3 id="1-3-事件相关"><a href="#1-3-事件相关" class="headerlink" title="1.3 事件相关"></a>1.3 事件相关</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>来源</th>
+<th>常用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&#39;scrolling&#39;</code></td>
+<td><code>ScrollView</code></td>
+<td>滚动时持续触发，拿 <code>scrollOffset</code></td>
+</tr>
+<tr>
+<td><code>&#39;scroll-ended&#39;</code></td>
+<td><code>ScrollView</code></td>
+<td>滚动停止时触发一次</td>
+</tr>
+<tr>
+<td><code>&#39;click&#39;</code> &#x2F; <code>Node.EventType.TOUCH_END</code></td>
+<td><code>Button</code> &#x2F; <code>Node</code></td>
+<td>点击</td>
+</tr>
+<tr>
+<td><code>Node.EventType.TOUCH_START</code></td>
+<td><code>Node</code></td>
+<td>按下</td>
+</tr>
+</tbody></table>
+<p><strong>触发模式核心区别</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>触发方式</th>
+<th>说明</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>node.on(&#39;event&#39;, cb, this)</code></td>
+<td>绑定在<strong>这个节点</strong>上</td>
+<td>需要明确事件源时</td>
+</tr>
+<tr>
+<td><code>node.on(&#39;event&#39;, cb, this, true)</code></td>
+<td>useCapture&#x3D;true 捕获阶段</td>
+<td>父节点提前拦截</td>
+</tr>
+<tr>
+<td><code>eventTarget.emit(&#39;name&#39;, data)</code></td>
+<td>自定义事件总线</td>
+<td>跨模块通信</td>
+</tr>
+</tbody></table>
+<p><strong>什么时候用 <code>EventTarget</code> 总线</strong>：<strong>跨模块通信</strong>，列表界面想知道”玩家打通关了”—— 总线 emit 一下，列表界面 on 一下，双方不互相 import。<strong>几乎所有列表刷新信号都应该走总线</strong>，这是坑里摔出来的经验。</p>
+<hr>
+<h2 id="2-渲染瓶颈"><a href="#2-渲染瓶颈" class="headerlink" title="2. 渲染瓶颈"></a>2. 渲染瓶颈</h2><h3 id="2-1-虚拟列表-—-只渲染可见区"><a href="#2-1-虚拟列表-—-只渲染可见区" class="headerlink" title="2.1 虚拟列表 — 只渲染可见区"></a>2.1 虚拟列表 — 只渲染可见区</h3><h4 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h4><p>N&#x3D;1000 个节点同屏 &#x3D; GPU + 合批直接死。Cocos 3.x 的渲染代价<strong>和可见节点数正相关</strong>，不是”看不见就不渲染”（<code>active=false</code> 的节点确实会跳过，但只是省了渲染，节点本身依然占内存）。</p>
+<h4 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h4><p><strong>核心思想</strong>：只实例化可见区的 N 个 item 节点（一般 20~30 个），滚动时复用这些节点，只改它们的 <code>position</code> 和数据。</p>
+<p>Cocos 3.x 官方提供了 <code>ScrollView</code>，但它<strong>不自带虚拟化</strong>，虚拟化要自己写。思路就这几行：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 可见区数学：给定滚动偏移 + 视口高 + item 高，算出哪几行要显示</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">computeVisibleRange</span>(<span class="params"></span></span><br><span class="line"><span class="params">    <span class="attr">scrollOffset</span>: <span class="built_in">number</span>,   <span class="comment">// content 偏移量（ScrollView 给你）</span></span></span><br><span class="line"><span class="params">    <span class="attr">viewportSize</span>: <span class="built_in">number</span>,   <span class="comment">// 视口高度</span></span></span><br><span class="line"><span class="params">    <span class="attr">itemSize</span>: <span class="built_in">number</span>,       <span class="comment">// 每行固定高</span></span></span><br><span class="line"><span class="params">    <span class="attr">totalCount</span>: <span class="built_in">number</span>,     <span class="comment">// 总行数</span></span></span><br><span class="line"><span class="params">    <span class="attr">buffer</span>: <span class="built_in">number</span> = <span class="number">2</span>,     <span class="comment">// 可见区外多渲染几行，避免滚动边缘白边</span></span></span><br><span class="line"><span class="params"></span>): [<span class="built_in">number</span>, <span class="built_in">number</span>] &#123;</span><br><span class="line">    <span class="keyword">const</span> first = <span class="title class_">Math</span>.<span class="title function_">max</span>(<span class="number">0</span>, <span class="title class_">Math</span>.<span class="title function_">floor</span>(scrollOffset / itemSize) - buffer);</span><br><span class="line">    <span class="keyword">const</span> last  = <span class="title class_">Math</span>.<span class="title function_">min</span>(totalCount - <span class="number">1</span>,</span><br><span class="line">                           <span class="title class_">Math</span>.<span class="title function_">ceil</span>((scrollOffset + viewportSize) / itemSize) + buffer);</span><br><span class="line">    <span class="keyword">return</span> [first, last];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="最小示例（虚拟列表组件）"><a href="#最小示例（虚拟列表组件）" class="headerlink" title="最小示例（虚拟列表组件）"></a>最小示例（虚拟列表组件）</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; _decorator, <span class="title class_">Component</span>, <span class="title class_">Node</span>, <span class="title class_">Prefab</span>, instantiate, <span class="title class_">ScrollView</span>,</span><br><span class="line">         <span class="title class_">UITransform</span>, <span class="title class_">Vec3</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;cc&#x27;</span>;</span><br><span class="line"><span class="keyword">const</span> &#123; ccclass, property &#125; = _decorator;</span><br><span class="line"></span><br><span class="line"><span class="meta">@ccclass</span>(<span class="string">&#x27;VirtualList&#x27;</span>)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">VirtualList</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Component</span> &#123;</span><br><span class="line">    <span class="meta">@property</span>(<span class="title class_">ScrollView</span>) <span class="attr">scrollView</span>: <span class="title class_">ScrollView</span> = <span class="literal">null</span>!;</span><br><span class="line">    <span class="meta">@property</span>(<span class="title class_">Node</span>)       <span class="attr">content</span>:    <span class="title class_">Node</span>       = <span class="literal">null</span>!;     <span class="comment">// ScrollView.content</span></span><br><span class="line">    <span class="meta">@property</span>(<span class="title class_">Prefab</span>)     <span class="attr">itemPrefab</span>: <span class="title class_">Prefab</span>     = <span class="literal">null</span>!;</span><br><span class="line">    <span class="meta">@property</span>             <span class="attr">itemHeight</span>: <span class="built_in">number</span>     = <span class="number">120</span>;</span><br><span class="line">    <span class="meta">@property</span>             <span class="attr">cols</span>:       <span class="built_in">number</span>     = <span class="number">2</span>;          <span class="comment">// 每行几列</span></span><br><span class="line">    <span class="meta">@property</span>             <span class="attr">gap</span>:        <span class="built_in">number</span>     = <span class="number">10</span>;</span><br><span class="line">    <span class="meta">@property</span>             <span class="attr">buffer</span>:     <span class="built_in">number</span>     = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="attr">data</span>: <span class="title class_">LevelData</span>[] = [];</span><br><span class="line">    <span class="keyword">private</span> <span class="attr">pool</span>: <span class="title class_">Node</span>[]      = [];      <span class="comment">// 节点池（复用）</span></span><br><span class="line">    <span class="keyword">private</span> <span class="attr">busy</span>: <span class="title class_">Map</span>&lt;<span class="built_in">number</span>, <span class="title class_">Node</span>&gt; = <span class="keyword">new</span> <span class="title class_">Map</span>();  <span class="comment">// 当前占用：rowIndex -&gt; node</span></span><br><span class="line"></span><br><span class="line">    <span class="title function_">setData</span>(<span class="params"><span class="attr">data</span>: <span class="title class_">LevelData</span>[]</span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">data</span> = data;</span><br><span class="line">        <span class="keyword">const</span> rowCount = <span class="title class_">Math</span>.<span class="title function_">ceil</span>(data.<span class="property">length</span> / <span class="variable language_">this</span>.<span class="property">cols</span>);</span><br><span class="line">        <span class="keyword">const</span> rowH = <span class="variable language_">this</span>.<span class="property">itemHeight</span> + <span class="variable language_">this</span>.<span class="property">gap</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 1. content 总高 = 行数 × 行高</span></span><br><span class="line">        <span class="keyword">const</span> ut = <span class="variable language_">this</span>.<span class="property">content</span>.<span class="title function_">getComponent</span>(<span class="title class_">UITransform</span>)!;</span><br><span class="line">        ut.<span class="title function_">setContentSize</span>(ut.<span class="property">width</span>, rowCount * rowH);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. 监听滚动</span></span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">scrollView</span>.<span class="property">node</span>.<span class="title function_">on</span>(<span class="string">&#x27;scrolling&#x27;</span>, <span class="variable language_">this</span>.<span class="property">onScroll</span>, <span class="variable language_">this</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 3. 手动刷新一次</span></span><br><span class="line">        <span class="variable language_">this</span>.<span class="title function_">onScroll</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">onScroll</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> viewport = <span class="variable language_">this</span>.<span class="property">scrollView</span>.<span class="property">view</span>!.<span class="title function_">getComponent</span>(<span class="title class_">UITransform</span>)!.<span class="property">height</span>;</span><br><span class="line">        <span class="keyword">const</span> offset   = <span class="variable language_">this</span>.<span class="property">scrollView</span>.<span class="title function_">getScrollOffset</span>().<span class="property">y</span>;  <span class="comment">// 顶部偏移</span></span><br><span class="line">        <span class="keyword">const</span> rowH     = <span class="variable language_">this</span>.<span class="property">itemHeight</span> + <span class="variable language_">this</span>.<span class="property">gap</span>;</span><br><span class="line">        <span class="keyword">const</span> totalRows = <span class="title class_">Math</span>.<span class="title function_">ceil</span>(<span class="variable language_">this</span>.<span class="property">data</span>.<span class="property">length</span> / <span class="variable language_">this</span>.<span class="property">cols</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> [first, last] = <span class="title function_">computeVisibleRange</span>(offset, viewport, rowH, totalRows, <span class="variable language_">this</span>.<span class="property">buffer</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 回收不在可见区的行</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">const</span> [row, node] <span class="keyword">of</span> <span class="variable language_">this</span>.<span class="property">busy</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (row &lt; first || row &gt; last) &#123;</span><br><span class="line">                node.<span class="property">active</span> = <span class="literal">false</span>;</span><br><span class="line">                <span class="variable language_">this</span>.<span class="property">pool</span>.<span class="title function_">push</span>(node);</span><br><span class="line">                <span class="variable language_">this</span>.<span class="property">busy</span>.<span class="title function_">delete</span>(row);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 为可见区的行分配节点</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> row = first; row &lt;= last; row++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">busy</span>.<span class="title function_">has</span>(row)) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">const</span> node = <span class="variable language_">this</span>.<span class="property">pool</span>.<span class="title function_">pop</span>() ?? <span class="title function_">instantiate</span>(<span class="variable language_">this</span>.<span class="property">itemPrefab</span>);</span><br><span class="line">            node.<span class="title function_">setParent</span>(<span class="variable language_">this</span>.<span class="property">content</span>);</span><br><span class="line">            node.<span class="property">active</span> = <span class="literal">true</span>;</span><br><span class="line">            node.<span class="title function_">setPosition</span>(<span class="keyword">new</span> <span class="title class_">Vec3</span>(<span class="number">0</span>, -row * rowH, <span class="number">0</span>));</span><br><span class="line">            <span class="variable language_">this</span>.<span class="title function_">renderRow</span>(node, row);</span><br><span class="line">            <span class="variable language_">this</span>.<span class="property">busy</span>.<span class="title function_">set</span>(row, node);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">renderRow</span>(<span class="params"><span class="attr">rowNode</span>: <span class="title class_">Node</span>, <span class="attr">rowIndex</span>: <span class="built_in">number</span></span>) &#123;</span><br><span class="line">        <span class="comment">// rowNode 下挂 cols 个 item 子节点</span></span><br><span class="line">        <span class="comment">// 按 rowIndex*cols + c 取数据，给每个子节点填 name / icon / state</span></span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title function_">onDestroy</span>(<span class="params"></span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">scrollView</span>?.<span class="property">node</span>.<span class="title function_">off</span>(<span class="string">&#x27;scrolling&#x27;</span>, <span class="variable language_">this</span>.<span class="property">onScroll</span>, <span class="variable language_">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">LevelData</span> &#123;</span><br><span class="line">    <span class="attr">tableId</span>: <span class="built_in">number</span>;</span><br><span class="line">    <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">    <span class="attr">iconUrl</span>: <span class="built_in">string</span>;</span><br><span class="line">    <span class="attr">state</span>: <span class="number">0</span> | <span class="number">1</span> | <span class="number">2</span>;   <span class="comment">// 未加载 / 加载中 / 已加载</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="关键要点（坑指南）"><a href="#关键要点（坑指南）" class="headerlink" title="关键要点（坑指南）"></a>关键要点（坑指南）</h4><ol>
+<li><strong>总行数不是总 item 数</strong>：2 列 N 个 item，行数 &#x3D; <code>ceil(N/2)</code></li>
+<li>**<code>buffer</code> 表示”可见区上下多画几行”**，给滚动衔接缓冲，一般 1~2</li>
+<li><strong>节点池不要无限扩</strong>：可见区最多 <code>(rows+1)*cols</code> 个，超了就说明 buffer 开太大</li>
+<li><strong><code>content</code> 的 <code>setContentSize</code> 一定要设</strong>，不然 ScrollView 不知道能滚多远</li>
+<li><strong>滚动事件是高频的</strong>（见 6.1），如果里面算得复杂，记得节流</li>
+</ol>
+<hr>
+<h3 id="2-2-动态图集-Texture2D-字节流-—-让-N-个-icon-合批"><a href="#2-2-动态图集-Texture2D-字节流-—-让-N-个-icon-合批" class="headerlink" title="2.2 动态图集 &#x2F; Texture2D 字节流 — 让 N 个 icon 合批"></a>2.2 动态图集 &#x2F; Texture2D 字节流 — 让 N 个 icon 合批</h3><h4 id="问题-1"><a href="#问题-1" class="headerlink" title="问题"></a>问题</h4><p>1000 个关卡 icon，每个 icon 一张独立 png &#x3D; 1000 个 SpriteFrame &#x3D; 1000 个贴图 &#x3D; Draw Call 灾难。即使用同一个 Sprite 材质，<strong>不同贴图之间断合批</strong>，真机一个节点一个 DC。</p>
+<h4 id="方案-A：动态图集（官方推荐，合并同材质-Sprite）"><a href="#方案-A：动态图集（官方推荐，合并同材质-Sprite）" class="headerlink" title="方案 A：动态图集（官方推荐，合并同材质 Sprite）"></a>方案 A：动态图集（官方推荐，合并同材质 Sprite）</h4><p>Cocos 3.x 编辑器里可以配置<strong>动态图集</strong>，自动把小图合并到一张大图：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">项目设置 → 项目数据 → 动态图集 → 启用动态图集</span><br></pre></td></tr></table></figure>
+
+<p>前提：Sprite 材质必须一致，贴图尺寸不超过配置的单图最大边长（默认 512）。</p>
+<h4 id="方案-B：Texture2D-直接画字节流（适合像素图-程序生成）"><a href="#方案-B：Texture2D-直接画字节流（适合像素图-程序生成）" class="headerlink" title="方案 B：Texture2D 直接画字节流（适合像素图 &#x2F; 程序生成）"></a>方案 B：Texture2D 直接画字节流（适合像素图 &#x2F; 程序生成）</h4><p>如果 icon 是像素画或者能用”调色板 + RLE”表达，服务端下发字节流，客户端手动构造贴图：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Texture2D</span>, <span class="title class_">ImageAsset</span>, <span class="title class_">SpriteFrame</span>, gfx &#125; <span class="keyword">from</span> <span class="string">&#x27;cc&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 从 RGBA8888 字节流构造一张 SpriteFrame */</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">createSpriteFrameFromBytes</span>(<span class="params"></span></span><br><span class="line"><span class="params">    <span class="attr">pixels</span>: <span class="title class_">Uint8Array</span>,     <span class="comment">// length = width*height*4</span></span></span><br><span class="line"><span class="params">    <span class="attr">width</span>: <span class="built_in">number</span>,</span></span><br><span class="line"><span class="params">    <span class="attr">height</span>: <span class="built_in">number</span>,</span></span><br><span class="line"><span class="params"></span>): <span class="title class_">SpriteFrame</span> &#123;</span><br><span class="line">    <span class="comment">// 1. ImageAsset 承载原始 buffer</span></span><br><span class="line">    <span class="keyword">const</span> image = <span class="keyword">new</span> <span class="title class_">ImageAsset</span>(&#123;</span><br><span class="line">        <span class="attr">_data</span>: pixels,</span><br><span class="line">        <span class="attr">_compressed</span>: <span class="literal">false</span>,</span><br><span class="line">        width,</span><br><span class="line">        height,</span><br><span class="line">        <span class="attr">format</span>: <span class="title class_">Texture2D</span>.<span class="property">PixelFormat</span>.<span class="property">RGBA8888</span>,</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. Texture2D 包装 ImageAsset</span></span><br><span class="line">    <span class="keyword">const</span> tex = <span class="keyword">new</span> <span class="title class_">Texture2D</span>();</span><br><span class="line">    tex.<span class="property">image</span> = image;</span><br><span class="line">    tex.<span class="title function_">setFilters</span>(<span class="title class_">Texture2D</span>.<span class="property">Filter</span>.<span class="property">NEAREST</span>, <span class="title class_">Texture2D</span>.<span class="property">Filter</span>.<span class="property">NEAREST</span>);   <span class="comment">// 像素图必须 NEAREST 避免糊</span></span><br><span class="line">    tex.<span class="title function_">setWrapMode</span>(<span class="title class_">Texture2D</span>.<span class="property">WrapMode</span>.<span class="property">CLAMP_TO_EDGE</span>, <span class="title class_">Texture2D</span>.<span class="property">WrapMode</span>.<span class="property">CLAMP_TO_EDGE</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. SpriteFrame 包装 Texture2D</span></span><br><span class="line">    <span class="keyword">const</span> sf = <span class="keyword">new</span> <span class="title class_">SpriteFrame</span>();</span><br><span class="line">    sf.<span class="property">texture</span> = tex;</span><br><span class="line">    <span class="keyword">return</span> sf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="RLE-解码（服务端下发调色板-索引串）"><a href="#RLE-解码（服务端下发调色板-索引串）" class="headerlink" title="RLE 解码（服务端下发调色板 + 索引串）"></a>RLE 解码（服务端下发调色板 + 索引串）</h4><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;gridSize&quot;</span><span class="punctuation">:</span> <span class="number">50</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;palette&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;#FFFFFF&quot;</span><span class="punctuation">,</span> <span class="string">&quot;#000000&quot;</span><span class="punctuation">,</span> <span class="string">&quot;#FFD700&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;pixels&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0:100,1:50,2:10,0:2340&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>gridSize</code>：边长</li>
+<li><code>palette</code>：hex 颜色表</li>
+<li><code>pixels</code>：RLE 压缩，<code>&quot;调色板索引:重复次数&quot;</code></li>
+</ul>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">decodePixels</span>(<span class="params"><span class="attr">gridSize</span>: <span class="built_in">number</span>, <span class="attr">palette</span>: <span class="built_in">string</span>[], <span class="attr">rle</span>: <span class="built_in">string</span></span>): <span class="title class_">Uint8Array</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> total = gridSize * gridSize;</span><br><span class="line">    <span class="keyword">const</span> buf = <span class="keyword">new</span> <span class="title class_">Uint8Array</span>(total * <span class="number">4</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 预解析 palette（hex → rgb）</span></span><br><span class="line">    <span class="keyword">const</span> rgb = palette.<span class="title function_">map</span>(<span class="function"><span class="params">hex</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> h = hex.<span class="title function_">startsWith</span>(<span class="string">&#x27;#&#x27;</span>) ? hex.<span class="title function_">slice</span>(<span class="number">1</span>) : hex;</span><br><span class="line">        <span class="keyword">return</span> &#123;</span><br><span class="line">            <span class="attr">r</span>: <span class="built_in">parseInt</span>(h.<span class="title function_">slice</span>(<span class="number">0</span>, <span class="number">2</span>), <span class="number">16</span>),</span><br><span class="line">            <span class="attr">g</span>: <span class="built_in">parseInt</span>(h.<span class="title function_">slice</span>(<span class="number">2</span>, <span class="number">4</span>), <span class="number">16</span>),</span><br><span class="line">            <span class="attr">b</span>: <span class="built_in">parseInt</span>(h.<span class="title function_">slice</span>(<span class="number">4</span>, <span class="number">6</span>), <span class="number">16</span>),</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> p = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> seg <span class="keyword">of</span> rle.<span class="title function_">split</span>(<span class="string">&#x27;,&#x27;</span>)) &#123;</span><br><span class="line">        <span class="keyword">const</span> colon = seg.<span class="title function_">indexOf</span>(<span class="string">&#x27;:&#x27;</span>);</span><br><span class="line">        <span class="keyword">if</span> (colon &lt; <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">const</span> pi = <span class="built_in">parseInt</span>(seg.<span class="title function_">slice</span>(<span class="number">0</span>, colon), <span class="number">10</span>);</span><br><span class="line">        <span class="keyword">const</span> cnt = <span class="built_in">parseInt</span>(seg.<span class="title function_">slice</span>(colon + <span class="number">1</span>), <span class="number">10</span>);</span><br><span class="line">        <span class="keyword">const</span> c = pi &gt;= <span class="number">0</span> ? rgb[pi] : <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; cnt &amp;&amp; p &lt; total; i++, p++) &#123;</span><br><span class="line">            <span class="keyword">const</span> o = p * <span class="number">4</span>;</span><br><span class="line">            <span class="keyword">if</span> (c) &#123;</span><br><span class="line">                buf[o] = c.<span class="property">r</span>; buf[o + <span class="number">1</span>] = c.<span class="property">g</span>; buf[o + <span class="number">2</span>] = c.<span class="property">b</span>; buf[o + <span class="number">3</span>] = <span class="number">255</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                buf[o + <span class="number">3</span>] = <span class="number">0</span>;   <span class="comment">// 透明</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (; p &lt; total; p++) buf[p * <span class="number">4</span> + <span class="number">3</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">return</span> buf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="为什么值"><a href="#为什么值" class="headerlink" title="为什么值"></a>为什么值</h4><ul>
+<li>JSON 比 png 小 10~50 倍（RLE + 调色板索引只有 1 字节）</li>
+<li>不用 HTTP 拉图片 + 图片解码管线</li>
+<li>像素数据还能和画刷叠加（玩家涂色实时改贴图）</li>
+</ul>
+<hr>
+<h3 id="2-3-精修刷新-—-只刷那一格"><a href="#2-3-精修刷新-—-只刷那一格" class="headerlink" title="2.3 精修刷新 — 只刷那一格"></a>2.3 精修刷新 — 只刷那一格</h3><h4 id="问题-2"><a href="#问题-2" class="headerlink" title="问题"></a>问题</h4><p>进二级页面（比如进关卡玩了一把）回到列表，<strong>只有一个 item 的状态变了</strong>。简单做法是整个列表 <code>setData</code> 重刷 &#x3D; 全部 item 重新实例化渲染 &#x3D; 卡。</p>
+<h4 id="方案-1"><a href="#方案-1" class="headerlink" title="方案"></a>方案</h4><p>维护一个字段 <code>lastPlayedIndex: number</code>（默认 -1）：</p>
+<ul>
+<li>点击 item 进关卡前写入当前索引</li>
+<li>从关卡回到列表时，读出这个索引</li>
+<li>只刷这一行对应的节点，不动其他节点</li>
+</ul>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">onReturnFromLevel</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> idx = <span class="variable language_">this</span>.<span class="property">lastPlayedIndex</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">lastPlayedIndex</span> = -<span class="number">1</span>;   <span class="comment">// 立刻 reset，避免重复触发</span></span><br><span class="line">    <span class="keyword">if</span> (idx &lt; <span class="number">0</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 更新这一条数据（state、星级、进度条）</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">data</span>[idx].<span class="property">state</span> = <span class="number">2</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">data</span>[idx].<span class="property">stars</span> = <span class="title class_">GameSave</span>.<span class="title function_">getStars</span>(<span class="variable language_">this</span>.<span class="property">data</span>[idx].<span class="property">tableId</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 只刷这一行对应的节点，不触发整个 ScrollView 重建</span></span><br><span class="line">    <span class="keyword">const</span> rowIndex = <span class="title class_">Math</span>.<span class="title function_">floor</span>(idx / <span class="variable language_">this</span>.<span class="property">cols</span>);</span><br><span class="line">    <span class="keyword">const</span> node = <span class="variable language_">this</span>.<span class="property">busy</span>.<span class="title function_">get</span>(rowIndex);</span><br><span class="line">    <span class="keyword">if</span> (node) <span class="variable language_">this</span>.<span class="title function_">renderRow</span>(node, rowIndex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>视觉上只有这一格变，代价 O(1)。</p>
+<p>**数据结构就是一个 number，带来的是首页永远丝滑。”好的优化不是增加代码，是增加一个数字让别人少写代码”**。</p>
+<hr>
+<h2 id="3-内存瓶颈"><a href="#3-内存瓶颈" class="headerlink" title="3. 内存瓶颈"></a>3. 内存瓶颈</h2><h3 id="3-1-SpriteFrame-Texture2D-必须手动释放"><a href="#3-1-SpriteFrame-Texture2D-必须手动释放" class="headerlink" title="3.1 SpriteFrame &#x2F; Texture2D 必须手动释放"></a>3.1 SpriteFrame &#x2F; Texture2D 必须手动释放</h3><h4 id="问题-3"><a href="#问题-3" class="headerlink" title="问题"></a>问题</h4><p>Cocos 3.x 的 <code>assetManager.loadRemote</code> 加载的贴图<strong>不会自动释放</strong>（默认 refCount 引擎不管）。滚到底内存 500MB 涨不回来 &#x3D; OOM 是常态。</p>
+<h4 id="方案-2"><a href="#方案-2" class="headerlink" title="方案"></a>方案</h4><p>两种释放方式，选一个用顺手：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 方式 A：显式减引用（推荐，可控）</span></span><br><span class="line">assetManager.<span class="property">loadRemote</span>&lt;<span class="title class_">ImageAsset</span>&gt;(url, <span class="function">(<span class="params">err, img</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">return</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">cache</span>[idx] = img;</span><br><span class="line">    img.<span class="title function_">addRef</span>();            <span class="comment">// 自己管引用</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 回收时</span></span><br><span class="line"><span class="keyword">const</span> img = <span class="variable language_">this</span>.<span class="property">cache</span>[idx];</span><br><span class="line">img.<span class="title function_">decRef</span>();                <span class="comment">// 引用归零时引擎自动释放</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="property">cache</span>[idx] = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 方式 B：Texture2D.destroy()</span></span><br><span class="line"><span class="keyword">const</span> tex = <span class="variable language_">this</span>.<span class="property">textures</span>[idx];</span><br><span class="line">tex.<span class="title function_">destroy</span>();               <span class="comment">// 立刻释放 GPU 资源</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="property">textures</span>[idx] = <span class="literal">null</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>别偷懒用 <code>assetManager.releaseAsset</code><strong>：在一些版本里释放顺序有坑，容易把正在显示的纹理一起干掉，屏幕花屏。</strong>显式 <code>addRef/decRef</code> 最稳</strong>。</p>
+<hr>
+<h3 id="3-2-保留窗回收-—-大数据主动释放"><a href="#3-2-保留窗回收-—-大数据主动释放" class="headerlink" title="3.2 保留窗回收 — 大数据主动释放"></a>3.2 保留窗回收 — 大数据主动释放</h3><h4 id="问题-4"><a href="#问题-4" class="headerlink" title="问题"></a>问题</h4><p>不回收 &#x3D; 滚到底内存爆炸。1 个 icon 512×512 RGBA &#x3D; 1MB，1000 关 &#x3D; 1GB。</p>
+<h4 id="方案-3"><a href="#方案-3" class="headerlink" title="方案"></a>方案</h4><ul>
+<li><strong>保留窗 &#x3D; 可见区 ± 一屏（keepBuffer）</strong></li>
+<li>窗外的已加载项：释放 Texture &#x2F; SpriteFrame，state 归 0</li>
+<li>重滚回来时三态机会自然重新下载</li>
+</ul>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="title function_">recycleOutOfWindow</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> viewport = <span class="variable language_">this</span>.<span class="property">scrollView</span>.<span class="property">view</span>!.<span class="title function_">getComponent</span>(<span class="title class_">UITransform</span>)!.<span class="property">height</span>;</span><br><span class="line">    <span class="keyword">const</span> offset   = <span class="variable language_">this</span>.<span class="property">scrollView</span>.<span class="title function_">getScrollOffset</span>().<span class="property">y</span>;</span><br><span class="line">    <span class="keyword">const</span> rowH     = <span class="variable language_">this</span>.<span class="property">itemHeight</span> + <span class="variable language_">this</span>.<span class="property">gap</span>;</span><br><span class="line">    <span class="keyword">const</span> totalRows = <span class="title class_">Math</span>.<span class="title function_">ceil</span>(<span class="variable language_">this</span>.<span class="property">data</span>.<span class="property">length</span> / <span class="variable language_">this</span>.<span class="property">cols</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> [first, last] = <span class="title function_">computeVisibleRange</span>(offset, viewport, rowH, totalRows, <span class="variable language_">this</span>.<span class="property">buffer</span>);</span><br><span class="line">    <span class="keyword">const</span> firstIdx = first * <span class="variable language_">this</span>.<span class="property">cols</span>;</span><br><span class="line">    <span class="keyword">const</span> lastIdx  = <span class="title class_">Math</span>.<span class="title function_">min</span>((last + <span class="number">1</span>) * <span class="variable language_">this</span>.<span class="property">cols</span>, <span class="variable language_">this</span>.<span class="property">data</span>.<span class="property">length</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 保留窗 = 可见区 + 上下各一屏</span></span><br><span class="line">    <span class="keyword">const</span> keep = (last - first + <span class="number">1</span>) * <span class="variable language_">this</span>.<span class="property">cols</span>;</span><br><span class="line">    <span class="keyword">const</span> keepFirst = <span class="title class_">Math</span>.<span class="title function_">max</span>(<span class="number">0</span>, firstIdx - keep);</span><br><span class="line">    <span class="keyword">const</span> keepLast  = <span class="title class_">Math</span>.<span class="title function_">min</span>(lastIdx + keep, <span class="variable language_">this</span>.<span class="property">data</span>.<span class="property">length</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> recycled = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// ⭐ 遍历 loadedSet 而不是 0..N —— O(loaded) 代替 O(N)</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> i <span class="keyword">of</span> <span class="variable language_">this</span>.<span class="property">loadedSet</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (i &lt; keepFirst || i &gt;= keepLast) &#123;</span><br><span class="line">            <span class="variable language_">this</span>.<span class="property">iconCache</span>[i]?.<span class="title function_">decRef</span>();    <span class="comment">// 或者 .destroy()</span></span><br><span class="line">            <span class="variable language_">this</span>.<span class="property">iconCache</span>[i] = <span class="literal">null</span>;</span><br><span class="line">            <span class="variable language_">this</span>.<span class="property">data</span>[i].<span class="property">state</span> = <span class="number">0</span>;</span><br><span class="line">            <span class="variable language_">this</span>.<span class="property">loadedSet</span>.<span class="title function_">delete</span>(i);       <span class="comment">// Set 迭代中 delete 合法</span></span><br><span class="line">            recycled++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> recycled;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="关键要点"><a href="#关键要点" class="headerlink" title="关键要点"></a>关键要点</h4><ol>
+<li><strong><code>keep</code> 必须 ≥ 可见区大小</strong>，否则”可见但刚好在窗边的 item”会被错误回收、滑动变灰</li>
+<li><strong><code>state=1</code>（加载中）不回收</strong> —— 请求在路上，回收了回调找不到 entry</li>
+<li><strong>迭代 Set 时 delete 是合法的</strong>（V8 &#x2F; JSC 规范保证）</li>
+<li><strong>为什么 <code>loadedSet</code> 那么重要</strong>：1000 条列表、当前 loaded 30 项，回收扫 30 次 vs 1000 次。这叫**”访问模式决定数据结构”**</li>
+</ol>
+<hr>
+<h3 id="3-3-小数据放-Component-字段，大数据放单例-Map"><a href="#3-3-小数据放-Component-字段，大数据放单例-Map" class="headerlink" title="3.3 小数据放 Component 字段，大数据放单例 Map"></a>3.3 小数据放 Component 字段，大数据放单例 Map</h3><h4 id="问题-5"><a href="#问题-5" class="headerlink" title="问题"></a>问题</h4><p>每个列表组件 <code>@property</code> 字段太多会让 Prefab 膨胀、序列化变慢，且<strong>大 buffer 不适合挂在节点组件上</strong>（跨场景切换会挂一堆）。</p>
+<h4 id="方案-4"><a href="#方案-4" class="headerlink" title="方案"></a>方案</h4><p>小状态（数字、字符串数组）放组件字段；大缓存（Uint8Array、Texture2D、SpriteFrame 池）放<strong>单例 Manager</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">LevelIconCache</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="attr">_inst</span>: <span class="title class_">LevelIconCache</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">get</span> <span class="title function_">inst</span>() &#123; <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">_inst</span> ??= <span class="keyword">new</span> <span class="title class_">LevelIconCache</span>(); &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="attr">pixels</span>:  <span class="title class_">Map</span>&lt;<span class="built_in">number</span>, <span class="title class_">Uint8Array</span>&gt;  = <span class="keyword">new</span> <span class="title class_">Map</span>();   <span class="comment">// 原始像素</span></span><br><span class="line">    <span class="keyword">private</span> <span class="attr">frames</span>:  <span class="title class_">Map</span>&lt;<span class="built_in">number</span>, <span class="title class_">SpriteFrame</span>&gt; = <span class="keyword">new</span> <span class="title class_">Map</span>();   <span class="comment">// 贴图</span></span><br><span class="line">    <span class="keyword">readonly</span> <span class="attr">loaded</span>: <span class="title class_">Set</span>&lt;<span class="built_in">number</span>&gt;              = <span class="keyword">new</span> <span class="title class_">Set</span>();</span><br><span class="line">    <span class="keyword">readonly</span> <span class="attr">pending</span>:<span class="title class_">Set</span>&lt;<span class="built_in">number</span>&gt;              = <span class="keyword">new</span> <span class="title class_">Set</span>();</span><br><span class="line"></span><br><span class="line">    <span class="title function_">set</span>(<span class="params"><span class="attr">tableId</span>: <span class="built_in">number</span>, <span class="attr">pixels</span>: <span class="title class_">Uint8Array</span>, <span class="attr">frame</span>: <span class="title class_">SpriteFrame</span></span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">pixels</span>.<span class="title function_">set</span>(tableId, pixels);</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">frames</span>.<span class="title function_">set</span>(tableId, frame);</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">loaded</span>.<span class="title function_">add</span>(tableId);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_">getFrame</span>(<span class="params"><span class="attr">tableId</span>: <span class="built_in">number</span></span>) &#123; <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">frames</span>.<span class="title function_">get</span>(tableId); &#125;</span><br><span class="line">    <span class="title function_">drop</span>(<span class="params"><span class="attr">tableId</span>: <span class="built_in">number</span></span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">frames</span>.<span class="title function_">get</span>(tableId)?.<span class="title function_">destroy</span>();</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">frames</span>.<span class="title function_">delete</span>(tableId);</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">pixels</span>.<span class="title function_">delete</span>(tableId);</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">loaded</span>.<span class="title function_">delete</span>(tableId);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 场景切换或整屏销毁时</span></span><br><span class="line">    <span class="title function_">clear</span>(<span class="params"></span>) &#123; <span class="keyword">for</span> (<span class="keyword">const</span> id <span class="keyword">of</span> <span class="variable language_">this</span>.<span class="property">loaded</span>) <span class="variable language_">this</span>.<span class="title function_">drop</span>(id); &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="心法"><a href="#心法" class="headerlink" title="心法"></a>心法</h4><p><strong>数据的”住所” &#x3D; 访问频率 × 大小 × 生命周期</strong>：</p>
+<ul>
+<li>每帧读、频繁变、体积小 → 组件字段</li>
+<li>体积大、多场景共享、生命周期 &gt; 单个节点 → 单例 Map</li>
+<li>临时中间态 → 局部变量</li>
+</ul>
+<hr>
+<h2 id="4-网络瓶颈"><a href="#4-网络瓶颈" class="headerlink" title="4. 网络瓶颈"></a>4. 网络瓶颈</h2><h3 id="4-1-按需下载-—-滚到哪下到哪"><a href="#4-1-按需下载-—-滚到哪下到哪" class="headerlink" title="4.1 按需下载 — 滚到哪下到哪"></a>4.1 按需下载 — 滚到哪下到哪</h3><h4 id="三态机"><a href="#三态机" class="headerlink" title="三态机"></a>三态机</h4><p><code>data[i].state</code>：</p>
+<ul>
+<li><code>0</code> &#x3D; 未加载（灰 &#x2F; 占位）</li>
+<li><code>1</code> &#x3D; 加载中（灰 + 菊花）</li>
+<li><code>2</code> &#x3D; 已加载（真图）</li>
+</ul>
+<p><strong>为什么不是两态</strong>：没有 0 就没法区分”从未下过”和”回收过的”，回收机制无法表达。</p>
+<h4 id="状态转换"><a href="#状态转换" class="headerlink" title="状态转换"></a>状态转换</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">              markVisible         下载成功</span><br><span class="line">0（未加载） ─────────────&gt; 1（加载中） ──────────&gt; 2（已加载）</span><br><span class="line"> ▲                         │                        │</span><br><span class="line"> │                         └──── 下载失败 ──────────┘</span><br><span class="line"> │                                                  │</span><br><span class="line"> └──────────── recycle（回收） ────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>任何状态都能回到 0</strong>（合法起点）&#x3D; 失败自愈。</p>
+<h4 id="可见区扫描"><a href="#可见区扫描" class="headerlink" title="可见区扫描"></a>可见区扫描</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="title function_">markVisibleItems</span>(): <span class="built_in">number</span>[] &#123;</span><br><span class="line">    <span class="keyword">const</span> [first, last] = <span class="variable language_">this</span>.<span class="title function_">currentVisibleRowRange</span>();</span><br><span class="line">    <span class="keyword">const</span> firstIdx = first * <span class="variable language_">this</span>.<span class="property">cols</span>;</span><br><span class="line">    <span class="keyword">const</span> lastIdx  = <span class="title class_">Math</span>.<span class="title function_">min</span>((last + <span class="number">1</span>) * <span class="variable language_">this</span>.<span class="property">cols</span>, <span class="variable language_">this</span>.<span class="property">data</span>.<span class="property">length</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="attr">newly</span>: <span class="built_in">number</span>[] = [];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = firstIdx; i &lt; lastIdx; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">data</span>[i].<span class="property">state</span> === <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="variable language_">this</span>.<span class="property">data</span>[i].<span class="property">state</span> = <span class="number">1</span>;</span><br><span class="line">            <span class="title class_">LevelIconCache</span>.<span class="property">inst</span>.<span class="property">pending</span>.<span class="title function_">add</span>(i);</span><br><span class="line">            newly.<span class="title function_">push</span>(i);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newly;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-2-pendingMap-—-按-url-查表支持并发去重"><a href="#4-2-pendingMap-—-按-url-查表支持并发去重" class="headerlink" title="4.2 pendingMap — 按 url 查表支持并发去重"></a>4.2 pendingMap — 按 url 查表支持并发去重</h3><h4 id="问题-6"><a href="#问题-6" class="headerlink" title="问题"></a>问题</h4><p><code>assetManager.loadRemote</code> 回调只带 url 和资源，不带”我是第几次请求”：</p>
+<ul>
+<li><strong>回调顺序不保证</strong></li>
+<li><strong>同一 url 可能并发</strong>（滚出屏幕又滚回来，state 从 2→0→1 再发一次）</li>
+</ul>
+<h4 id="方案-5"><a href="#方案-5" class="headerlink" title="方案"></a>方案</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> <span class="title class_">PendingEntry</span> = &#123; <span class="attr">tableId</span>: <span class="built_in">number</span>; <span class="attr">idx</span>: <span class="built_in">number</span>; <span class="attr">startTime</span>: <span class="built_in">number</span> &#125;;</span><br><span class="line"><span class="keyword">private</span> <span class="attr">pendingMap</span>: <span class="title class_">Map</span>&lt;<span class="built_in">string</span>, <span class="title class_">PendingEntry</span>[]&gt; = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>key &#x3D; url（回调用 url 查）</li>
+<li>value &#x3D; <strong>数组</strong>（同 url 并发时 push 多条，<code>shift()</code> 按发起顺序取）</li>
+<li>entry 存 <code>tableId + idx + startTime</code></li>
+</ul>
+<h4 id="如果-value-是单值会怎样"><a href="#如果-value-是单值会怎样" class="headerlink" title="如果 value 是单值会怎样"></a>如果 value 是单值会怎样</h4><p>第二次请求覆盖第一次的 entry，第一次回调到时找不到 entry，UI 卡在 state&#x3D;1 永远翻不到 2。</p>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 发请求</span></span><br><span class="line"><span class="keyword">private</span> <span class="title function_">startBatchLoad</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> now = <span class="title class_">Date</span>.<span class="title function_">now</span>();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> i <span class="keyword">of</span> <span class="title class_">LevelIconCache</span>.<span class="property">inst</span>.<span class="property">pending</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">data</span>[i].<span class="property">state</span> !== <span class="number">1</span>) <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">const</span> tableId = <span class="variable language_">this</span>.<span class="property">data</span>[i].<span class="property">tableId</span>;</span><br><span class="line">        <span class="keyword">const</span> url = <span class="string">`https://cdn.example.com/levels/<span class="subst">$&#123;tableId&#125;</span>.json`</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">let</span> queue = <span class="variable language_">this</span>.<span class="property">pendingMap</span>.<span class="title function_">get</span>(url);</span><br><span class="line">        <span class="keyword">if</span> (!queue) &#123; queue = []; <span class="variable language_">this</span>.<span class="property">pendingMap</span>.<span class="title function_">set</span>(url, queue); &#125;</span><br><span class="line">        queue.<span class="title function_">push</span>(&#123; tableId, <span class="attr">idx</span>: i, <span class="attr">startTime</span>: now &#125;);</span><br><span class="line"></span><br><span class="line">        assetManager.<span class="property">loadRemote</span>&lt;<span class="title class_">JsonAsset</span>&gt;(url, <span class="function">(<span class="params">err, json</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="variable language_">this</span>.<span class="title function_">onJsonLoaded</span>(url, err, json);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 处理回调</span></span><br><span class="line"><span class="keyword">private</span> <span class="title function_">onJsonLoaded</span>(<span class="params"><span class="attr">url</span>: <span class="built_in">string</span>, <span class="attr">err</span>: <span class="title class_">Error</span> | <span class="literal">null</span>, <span class="attr">json</span>: <span class="built_in">any</span></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> queue = <span class="variable language_">this</span>.<span class="property">pendingMap</span>.<span class="title function_">get</span>(url);</span><br><span class="line">    <span class="keyword">if</span> (!queue || queue.<span class="property">length</span> === <span class="number">0</span>) <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">const</span> entry = queue.<span class="title function_">shift</span>()!;             <span class="comment">// ⭐ FIFO 取出</span></span><br><span class="line">    <span class="keyword">if</span> (queue.<span class="property">length</span> === <span class="number">0</span>) <span class="variable language_">this</span>.<span class="property">pendingMap</span>.<span class="title function_">delete</span>(url);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 快路径 + fallback：处理分页追加导致的索引错位</span></span><br><span class="line">    <span class="keyword">let</span> idx = entry.<span class="property">idx</span>;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">data</span>[idx]?.<span class="property">tableId</span> !== entry.<span class="property">tableId</span>) &#123;</span><br><span class="line">        idx = <span class="variable language_">this</span>.<span class="property">data</span>.<span class="title function_">findIndex</span>(<span class="function"><span class="params">d</span> =&gt;</span> d.<span class="property">tableId</span> === entry.<span class="property">tableId</span>);</span><br><span class="line">        <span class="keyword">if</span> (idx &lt; <span class="number">0</span>) <span class="keyword">return</span>;   <span class="comment">// 条目已被移除</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title class_">LevelIconCache</span>.<span class="property">inst</span>.<span class="property">pending</span>.<span class="title function_">delete</span>(idx);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (err || !json) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.<span class="property">data</span>[idx].<span class="property">state</span> = <span class="number">0</span>;   <span class="comment">// 退回 0，重滚回来自然重试</span></span><br><span class="line">        <span class="variable language_">this</span>.<span class="title function_">traceDownloadFail</span>(entry.<span class="property">tableId</span>, err?.<span class="property">message</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解码像素 + 构造 SpriteFrame</span></span><br><span class="line">    <span class="keyword">const</span> raw = json.<span class="property">json</span> <span class="keyword">as</span> &#123; <span class="attr">gridSize</span>: <span class="built_in">number</span>; <span class="attr">palette</span>: <span class="built_in">string</span>[]; <span class="attr">pixels</span>: <span class="built_in">string</span> &#125;;</span><br><span class="line">    <span class="keyword">const</span> pixels = <span class="title function_">decodePixels</span>(raw.<span class="property">gridSize</span>, raw.<span class="property">palette</span>, raw.<span class="property">pixels</span>);</span><br><span class="line">    <span class="keyword">const</span> frame  = <span class="title function_">createSpriteFrameFromBytes</span>(pixels, raw.<span class="property">gridSize</span>, raw.<span class="property">gridSize</span>);</span><br><span class="line">    <span class="title class_">LevelIconCache</span>.<span class="property">inst</span>.<span class="title function_">set</span>(entry.<span class="property">tableId</span>, pixels, frame);</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">data</span>[idx].<span class="property">state</span> = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 顺手落盘（见 5.1）</span></span><br><span class="line">    sys.<span class="property">localStorage</span>.<span class="title function_">setItem</span>(<span class="string">`level_icon_<span class="subst">$&#123;entry.tableId&#125;</span>`</span>, <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(raw));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 只刷这一行</span></span><br><span class="line">    <span class="keyword">const</span> rowIndex = <span class="title class_">Math</span>.<span class="title function_">floor</span>(idx / <span class="variable language_">this</span>.<span class="property">cols</span>);</span><br><span class="line">    <span class="keyword">const</span> node = <span class="variable language_">this</span>.<span class="property">busy</span>.<span class="title function_">get</span>(rowIndex);</span><br><span class="line">    <span class="keyword">if</span> (node) <span class="variable language_">this</span>.<span class="title function_">renderRow</span>(node, rowIndex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-3-分页加载-—-首页先下-300KB"><a href="#4-3-分页加载-—-首页先下-300KB" class="headerlink" title="4.3 分页加载 — 首页先下 300KB"></a>4.3 分页加载 — 首页先下 300KB</h3><h4 id="问题-7"><a href="#问题-7" class="headerlink" title="问题"></a>问题</h4><p>N&#x3D;2000 一个大 JSON 5MB，首屏启动下 5MB 体验崩盘。</p>
+<h4 id="方案-6"><a href="#方案-6" class="headerlink" title="方案"></a>方案</h4><p>服务端切成 <code>page_1.json</code>（首页 30 条）+ <code>page_2.json / page_3.json / ...</code>，客户端：</p>
+<ul>
+<li>Boot 先同步合并首页</li>
+<li>后台串行拉分页 2&#x2F;3&#x2F;4</li>
+<li>每页合并后**整体赋值 <code>this.data</code>**，再重算 <code>content</code> 高度</li>
+</ul>
+<h4 id="追加时的陷阱"><a href="#追加时的陷阱" class="headerlink" title="追加时的陷阱"></a>追加时的陷阱</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ❌ 只 push，ScrollView 不知道总高变了</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="property">data</span>.<span class="title function_">push</span>(...newItems);</span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 正确：append 后重算 content 高度</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="property">data</span>.<span class="title function_">push</span>(...newItems);</span><br><span class="line"><span class="keyword">const</span> rowCount = <span class="title class_">Math</span>.<span class="title function_">ceil</span>(<span class="variable language_">this</span>.<span class="property">data</span>.<span class="property">length</span> / <span class="variable language_">this</span>.<span class="property">cols</span>);</span><br><span class="line"><span class="keyword">const</span> rowH = <span class="variable language_">this</span>.<span class="property">itemHeight</span> + <span class="variable language_">this</span>.<span class="property">gap</span>;</span><br><span class="line"><span class="variable language_">this</span>.<span class="property">content</span>.<span class="title function_">getComponent</span>(<span class="title class_">UITransform</span>)!.<span class="title function_">setContentSize</span>(</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">content</span>.<span class="title function_">getComponent</span>(<span class="title class_">UITransform</span>)!.<span class="property">width</span>,</span><br><span class="line">    rowCount * rowH,</span><br><span class="line">);</span><br><span class="line"><span class="variable language_">this</span>.<span class="title function_">onScroll</span>();   <span class="comment">// 重算可见区</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="探页到-404-—-分页终点的简约信号"><a href="#探页到-404-—-分页终点的简约信号" class="headerlink" title="探页到 404 — 分页终点的简约信号"></a>探页到 404 — 分页终点的简约信号</h4><p>客户端不知道总共几页？<strong>不用在 config 里写总页数，也不用 server push</strong>：从 <code>_1.json</code> 开始探，返回 404 就是终点。</p>
+<ul>
+<li>服务端只管扔文件</li>
+<li>客户端只管连请求直到 404</li>
+<li>看到一串 404 日志别慌 —— 这是<strong>正常终止信号</strong></li>
+</ul>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">async</span> <span class="title function_">loadAllPages</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> p = <span class="number">1</span>; ; p++) &#123;</span><br><span class="line">        <span class="keyword">const</span> url = <span class="string">`https://cdn.example.com/levels/page_<span class="subst">$&#123;p&#125;</span>.json`</span>;</span><br><span class="line">        <span class="keyword">const</span> ok = <span class="keyword">await</span> <span class="variable language_">this</span>.<span class="title function_">loadOnePage</span>(url);</span><br><span class="line">        <span class="keyword">if</span> (!ok) <span class="keyword">break</span>;   <span class="comment">// 404 / 网络错，视为终点</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-冷启动瓶颈"><a href="#5-冷启动瓶颈" class="headerlink" title="5. 冷启动瓶颈"></a>5. 冷启动瓶颈</h2><h3 id="5-1-sys-localStorage-—-跨平台-KV"><a href="#5-1-sys-localStorage-—-跨平台-KV" class="headerlink" title="5.1 sys.localStorage — 跨平台 KV"></a>5.1 sys.localStorage — 跨平台 KV</h3><h4 id="问题-8"><a href="#问题-8" class="headerlink" title="问题"></a>问题</h4><p>每次开游戏都重下。老用户”昨天看过的 1000 张图”今天全要重走网络，白嫖不到”已经下过”的事实。</p>
+<h4 id="方案-7"><a href="#方案-7" class="headerlink" title="方案"></a>方案</h4><p>Cocos 3.x 的 <code>sys.localStorage</code> 是跨平台 KV 封装：</p>
+<ul>
+<li>原生 → 本地文件系统</li>
+<li>H5 → 浏览器 localStorage</li>
+<li>微信小游戏 → <code>wx.setStorage</code></li>
+</ul>
+<p>**你只管调 <code>setItem</code> &#x2F; <code>getItem</code>**，底层差异被隐藏了。</p>
+<h4 id="Key-命名规范"><a href="#Key-命名规范" class="headerlink" title="Key 命名规范"></a>Key 命名规范</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sys.<span class="property">localStorage</span>.<span class="title function_">setItem</span>(<span class="string">`level_icon_<span class="subst">$&#123;tableId&#125;</span>`</span>, <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(json));</span><br><span class="line"><span class="keyword">const</span> str = sys.<span class="property">localStorage</span>.<span class="title function_">getItem</span>(<span class="string">`level_icon_<span class="subst">$&#123;tableId&#125;</span>`</span>);</span><br><span class="line"><span class="keyword">const</span> json = str ? <span class="title class_">JSON</span>.<span class="title function_">parse</span>(str) : <span class="literal">null</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>必须加 feature 前缀</strong>（<code>level_icon_</code> &#x2F; <code>myApp_</code>），全局 KV 空间是共享的，没前缀迟早撞。</p>
+<p><strong>容量上限</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>平台</th>
+<th>上限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>H5（浏览器）</td>
+<td>5~10MB</td>
+</tr>
+<tr>
+<td>微信小游戏</td>
+<td>10MB</td>
+</tr>
+<tr>
+<td>原生</td>
+<td>理论无上限（本地文件）</td>
+</tr>
+</tbody></table>
+<p><strong>超过上限会抛异常</strong>，大缓存要做 LRU 淘汰或者别用 localStorage（上 IndexedDB &#x2F; jsb.fileUtils）。</p>
+<hr>
+<h3 id="5-2-prewarmLocalCache-—-首屏预热"><a href="#5-2-prewarmLocalCache-—-首屏预热" class="headerlink" title="5.2 prewarmLocalCache — 首屏预热"></a>5.2 prewarmLocalCache — 首屏预热</h3><h4 id="问题-9"><a href="#问题-9" class="headerlink" title="问题"></a>问题</h4><p>光有 localStorage 不够。Boot 时没预热的话，第一次滚动还是要走”读盘 → 解码”。</p>
+<h4 id="方案-8"><a href="#方案-8" class="headerlink" title="方案"></a>方案</h4><p>Boot 末尾遍历列表，命中的直接解码入库 + state&#x3D;2：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="title function_">prewarmFromLocal</span>(): <span class="built_in">number</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> hits = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="variable language_">this</span>.<span class="property">data</span>.<span class="property">length</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">const</span> tableId = <span class="variable language_">this</span>.<span class="property">data</span>[i].<span class="property">tableId</span>;</span><br><span class="line">        <span class="keyword">const</span> str = sys.<span class="property">localStorage</span>.<span class="title function_">getItem</span>(<span class="string">`level_icon_<span class="subst">$&#123;tableId&#125;</span>`</span>);</span><br><span class="line">        <span class="keyword">if</span> (!str) <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">const</span> raw = <span class="title class_">JSON</span>.<span class="title function_">parse</span>(str) <span class="keyword">as</span> &#123; <span class="attr">gridSize</span>: <span class="built_in">number</span>; <span class="attr">palette</span>: <span class="built_in">string</span>[]; <span class="attr">pixels</span>: <span class="built_in">string</span> &#125;;</span><br><span class="line">            <span class="keyword">const</span> pixels = <span class="title function_">decodePixels</span>(raw.<span class="property">gridSize</span>, raw.<span class="property">palette</span>, raw.<span class="property">pixels</span>);</span><br><span class="line">            <span class="keyword">const</span> frame  = <span class="title function_">createSpriteFrameFromBytes</span>(pixels, raw.<span class="property">gridSize</span>, raw.<span class="property">gridSize</span>);</span><br><span class="line">            <span class="title class_">LevelIconCache</span>.<span class="property">inst</span>.<span class="title function_">set</span>(tableId, pixels, frame);</span><br><span class="line">            <span class="variable language_">this</span>.<span class="property">data</span>[i].<span class="property">state</span> = <span class="number">2</span>;</span><br><span class="line">            hits++;</span><br><span class="line">        &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">            sys.<span class="property">localStorage</span>.<span class="title function_">removeItem</span>(<span class="string">`level_icon_<span class="subst">$&#123;tableId&#125;</span>`</span>);   <span class="comment">// 坏数据清掉</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> hits;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="关键顺序（绝对不能颠倒）"><a href="#关键顺序（绝对不能颠倒）" class="headerlink" title="关键顺序（绝对不能颠倒）"></a>关键顺序（绝对不能颠倒）</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">setData(data)                 ← ① 拿到完整数据</span><br><span class="line">   ↓</span><br><span class="line">prewarmFromLocal()            ← ② 本地命中的全部预热入库（state 0 → 2）</span><br><span class="line">   ↓</span><br><span class="line">onScroll()                    ← ③ 触发可见区扫描，标 state=1</span><br><span class="line">   ↓</span><br><span class="line">startBatchLoad()              ← ④ 为 state=1 发网络请求</span><br></pre></td></tr></table></figure>
+
+<p><strong>颠倒的后果</strong>：markVisible 在 prewarm 之前 → 已经在本地的 item 也被标成 1 → 白发一次网络请求。</p>
+<hr>
+<h3 id="5-3-preloadTomorrow-—-主动投递”明天”"><a href="#5-3-preloadTomorrow-—-主动投递”明天”" class="headerlink" title="5.3 preloadTomorrow — 主动投递”明天”"></a>5.3 preloadTomorrow — 主动投递”明天”</h3><h4 id="问题-10"><a href="#问题-10" class="headerlink" title="问题"></a>问题</h4><p>运营每天上新关卡。用户明天开 App 还是要下。</p>
+<h4 id="方案-9"><a href="#方案-9" class="headerlink" title="方案"></a>方案</h4><p>今天进游戏那一刻，悄悄把”明天要上线的 JSON”下到磁盘：</p>
+<ul>
+<li>只 <code>setItem</code>，<strong>不解码</strong>（省 CPU）</li>
+<li>第二天开 App → prewarm 命中 → 秒出</li>
+</ul>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 登录成功后台任务（低优先级）</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">preloadTomorrowIcons</span>(<span class="params"><span class="attr">tableIds</span>: <span class="built_in">number</span>[]</span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> id <span class="keyword">of</span> tableIds) &#123;</span><br><span class="line">        <span class="keyword">if</span> (sys.<span class="property">localStorage</span>.<span class="title function_">getItem</span>(<span class="string">`level_icon_<span class="subst">$&#123;id&#125;</span>`</span>)) <span class="keyword">continue</span>;   <span class="comment">// 已经有了跳过</span></span><br><span class="line">        <span class="keyword">const</span> url = <span class="string">`https://cdn.example.com/levels/<span class="subst">$&#123;id&#125;</span>.json`</span>;</span><br><span class="line">        assetManager.<span class="property">loadRemote</span>&lt;<span class="title class_">JsonAsset</span>&gt;(url, <span class="function">(<span class="params">err, json</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (err || !json) <span class="keyword">return</span>;</span><br><span class="line">            sys.<span class="property">localStorage</span>.<span class="title function_">setItem</span>(<span class="string">`level_icon_<span class="subst">$&#123;id&#125;</span>`</span>, <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(json.<span class="property">json</span>));</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="和”被动-saveJson”的关系"><a href="#和”被动-saveJson”的关系" class="headerlink" title="和”被动 saveJson”的关系"></a>和”被动 saveJson”的关系</h4><ul>
+<li><strong>被动缓存</strong>：用户看过的自动落盘</li>
+<li><strong>preloadTomorrow</strong>：用户还没看过的主动投递</li>
+<li><strong>两条合体</strong>：用户感受”这游戏每天都秒开”</li>
+</ul>
+<hr>
+<h2 id="6-CPU-瓶颈（高频事件）"><a href="#6-CPU-瓶颈（高频事件）" class="headerlink" title="6. CPU 瓶颈（高频事件）"></a>6. CPU 瓶颈（高频事件）</h2><h3 id="6-1-scrolling-节流"><a href="#6-1-scrolling-节流" class="headerlink" title="6.1 scrolling 节流"></a>6.1 scrolling 节流</h3><h4 id="问题-11"><a href="#问题-11" class="headerlink" title="问题"></a>问题</h4><p><code>ScrollView</code> 的 <code>&#39;scrolling&#39;</code> 事件 60 FPS 推 &#x3D; 一秒 60 次。里面如果要算可见区、要标 state、要触发下载，主线程直接被占满。</p>
+<h4 id="方案-10"><a href="#方案-10" class="headerlink" title="方案"></a>方案</h4><p><strong>节流（throttle）</strong>：规定时间内最多跑一次。</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> lastScrollT = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">private</span> scrollThrottleMs = <span class="number">16</span>;    <span class="comment">// ~60fps，也可以放宽到 33ms（30fps）</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="title function_">onScroll</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> now = <span class="title class_">Date</span>.<span class="title function_">now</span>();</span><br><span class="line">    <span class="keyword">if</span> (now - <span class="variable language_">this</span>.<span class="property">lastScrollT</span> &lt; <span class="variable language_">this</span>.<span class="property">scrollThrottleMs</span>) <span class="keyword">return</span>;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">lastScrollT</span> = now;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 可见区计算、标 pending、触发下载 ...</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">recycleOutOfWindow</span>();</span><br><span class="line">    <span class="keyword">const</span> newly = <span class="variable language_">this</span>.<span class="title function_">markVisibleItems</span>();</span><br><span class="line">    <span class="keyword">if</span> (newly.<span class="property">length</span> &gt; <span class="number">0</span>) <span class="variable language_">this</span>.<span class="title function_">startBatchLoad</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="节流-vs-防抖"><a href="#节流-vs-防抖" class="headerlink" title="节流 vs 防抖"></a>节流 vs 防抖</h4><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>throttle 节流</td>
+<td>取样类（scroll 位置、resize）</td>
+</tr>
+<tr>
+<td>debounce 防抖</td>
+<td>“停下来才处理”（搜索框输入、ScrollView 的 <code>scroll-ended</code>）</td>
+</tr>
+</tbody></table>
+<p><strong>Cocos 3.x 的 <code>&#39;scroll-ended&#39;</code> 事件本身就是防抖</strong>：滚动停止一小段时间才触发一次。如果你只在停下来时加载，就直接监听它，连节流都不用写。</p>
+<h4 id="什么时候加"><a href="#什么时候加" class="headerlink" title="什么时候加"></a>什么时候加</h4><p><strong>节流是优化，不是洁癖</strong>。先跑起来，发现 scrolling 真的是瓶颈再加。绝大多数场景可见区计算本身便宜，节流反而引入 16ms 延迟。</p>
+<hr>
+<h3 id="6-2-Set-代替数组遍历-—-冗余索引换时间"><a href="#6-2-Set-代替数组遍历-—-冗余索引换时间" class="headerlink" title="6.2 Set 代替数组遍历 — 冗余索引换时间"></a>6.2 Set 代替数组遍历 — 冗余索引换时间</h3><h4 id="问题-12"><a href="#问题-12" class="headerlink" title="问题"></a>问题</h4><ul>
+<li>回收时要找所有 state&#x3D;2 项 → 扫 <code>data</code> 全表？O(N)</li>
+<li>startBatchLoad 要找所有 state&#x3D;1 项 → 扫全表？O(N)</li>
+</ul>
+<h4 id="方案-11"><a href="#方案-11" class="headerlink" title="方案"></a>方案</h4><p>维护 <code>loadedSet: Set&lt;number&gt;</code> 和 <code>pendingSet: Set&lt;number&gt;</code>（见 3.3 的 <code>LevelIconCache</code>）：</p>
+<ul>
+<li>信息<strong>冗余</strong>（<code>data[i].state</code> 里也能扫出来）</li>
+<li>遍历从 O(N) 降到 O(loaded) &#x2F; O(pending)</li>
+<li>N&#x3D;100 差不多，<strong>N&#x3D;10000 差一个数量级</strong></li>
+</ul>
+<p><strong>心法</strong>：**”访问模式决定数据结构”<strong>。如果你知道”只关心某个子集”，就</strong>维护那个子集的索引**，别指望 <code>filter</code> 扫全表。</p>
+<hr>
+<h3 id="6-3-避免无谓重绘"><a href="#6-3-避免无谓重绘" class="headerlink" title="6.3 避免无谓重绘"></a>6.3 避免无谓重绘</h3><h4 id="问题-13"><a href="#问题-13" class="headerlink" title="问题"></a>问题</h4><p><code>setString</code> &#x2F; <code>setSpriteFrame</code> 即使新旧值相同，Cocos 3.x 仍然会触发 dirty flag 走一遍更新。每次 <code>onScroll</code> 无脑重新赋值 label.string &#x3D; ‘Lv ‘ + data.name &#x3D; 60 次&#x2F;秒全量刷字 &#x3D; 卡。</p>
+<h4 id="方案-12"><a href="#方案-12" class="headerlink" title="方案"></a>方案</h4><p><strong>有变化才赋值</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="title function_">renderRow</span>(<span class="params"><span class="attr">rowNode</span>: <span class="title class_">Node</span>, <span class="attr">rowIndex</span>: <span class="built_in">number</span></span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> c = <span class="number">0</span>; c &lt; <span class="variable language_">this</span>.<span class="property">cols</span>; c++) &#123;</span><br><span class="line">        <span class="keyword">const</span> idx = rowIndex * <span class="variable language_">this</span>.<span class="property">cols</span> + c;</span><br><span class="line">        <span class="keyword">if</span> (idx &gt;= <span class="variable language_">this</span>.<span class="property">data</span>.<span class="property">length</span>) &#123; ... <span class="keyword">continue</span>; &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> cell = rowNode.<span class="property">children</span>[c];</span><br><span class="line">        <span class="keyword">const</span> label = cell.<span class="title function_">getChildByName</span>(<span class="string">&#x27;name&#x27;</span>)!.<span class="title function_">getComponent</span>(<span class="title class_">Label</span>)!;</span><br><span class="line">        <span class="keyword">const</span> sprite = cell.<span class="title function_">getChildByName</span>(<span class="string">&#x27;icon&#x27;</span>)!.<span class="title function_">getComponent</span>(<span class="title class_">Sprite</span>)!;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> newName = <span class="variable language_">this</span>.<span class="property">data</span>[idx].<span class="property">name</span>;</span><br><span class="line">        <span class="keyword">if</span> (label.<span class="property">string</span> !== newName) label.<span class="property">string</span> = newName;   <span class="comment">// ⭐ 差才改</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> newFrame = <span class="title class_">LevelIconCache</span>.<span class="property">inst</span>.<span class="title function_">getFrame</span>(<span class="variable language_">this</span>.<span class="property">data</span>[idx].<span class="property">tableId</span>) ?? <span class="variable language_">this</span>.<span class="property">defaultFrame</span>;</span><br><span class="line">        <span class="keyword">if</span> (sprite.<span class="property">spriteFrame</span> !== newFrame) sprite.<span class="property">spriteFrame</span> = newFrame;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="7-事件分发瓶颈"><a href="#7-事件分发瓶颈" class="headerlink" title="7. 事件分发瓶颈"></a>7. 事件分发瓶颈</h2><h3 id="7-1-事件源判断-—-不是给我的事件早返回"><a href="#7-1-事件源判断-—-不是给我的事件早返回" class="headerlink" title="7.1 事件源判断 — 不是给我的事件早返回"></a>7.1 事件源判断 — 不是给我的事件早返回</h3><h4 id="问题-14"><a href="#问题-14" class="headerlink" title="问题"></a>问题</h4><p>列表 item 的点击事件往往会被父节点冒泡接到，然后父节点里要判”这次点击是不是在关卡区内”。如果全局 Pointer 也监听了，一次点击会唤多个 handler。</p>
+<h4 id="方案-13"><a href="#方案-13" class="headerlink" title="方案"></a>方案</h4><p>冒泡阶段里<strong>尽早判断事件源</strong>，不是给我的事件立刻 return：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">onItemClicked</span>(<span class="params"><span class="attr">event</span>: <span class="title class_">EventTouch</span></span>) &#123;</span><br><span class="line">    <span class="comment">// event.target 是触发节点，event.currentTarget 是当前接收节点</span></span><br><span class="line">    <span class="keyword">const</span> target = event.<span class="property">target</span>;</span><br><span class="line">    <span class="keyword">if</span> (!target.<span class="property">name</span>.<span class="title function_">startsWith</span>(<span class="string">&#x27;LevelItem_&#x27;</span>)) <span class="keyword">return</span>;   <span class="comment">// 不是关卡 item 直接走人</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> tableId = <span class="title class_">Number</span>(target.<span class="property">name</span>.<span class="title function_">substring</span>(<span class="string">&#x27;LevelItem_&#x27;</span>.<span class="property">length</span>));</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">enterLevel</span>(tableId);</span><br><span class="line">    event.<span class="property">propagationStopped</span> = <span class="literal">true</span>;                     <span class="comment">// 阻止继续冒泡</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="更省事的做法：按节点绑，不按全局绑"><a href="#更省事的做法：按节点绑，不按全局绑" class="headerlink" title="更省事的做法：按节点绑，不按全局绑"></a>更省事的做法：按节点绑，不按全局绑</h4><p>Cocos 3.x 的事件系统天然支持”绑在哪个节点就只有经过这个节点的事件触发”：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ✅ 只监听 content 节点下的 touch-end</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="property">content</span>.<span class="title function_">on</span>(<span class="title class_">Node</span>.<span class="property">EventType</span>.<span class="property">TOUCH_END</span>, <span class="variable language_">this</span>.<span class="property">onItemClicked</span>, <span class="variable language_">this</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// ❌ 绑到 canvas / 场景根上，所有触摸都要过这个函数</span></span><br><span class="line">director.<span class="title function_">getScene</span>().<span class="title function_">on</span>(<span class="title class_">Node</span>.<span class="property">EventType</span>.<span class="property">TOUCH_END</span>, ...);</span><br></pre></td></tr></table></figure>
+
+<p><strong>“事件只在该到达的地方接收”</strong> 就是事件层面的 <code>routeCondition</code>。</p>
+<hr>
+<h3 id="7-2-EventTarget-总线-vs-import-直调"><a href="#7-2-EventTarget-总线-vs-import-直调" class="headerlink" title="7.2 EventTarget 总线 vs import 直调"></a>7.2 <code>EventTarget</code> 总线 vs <code>import</code> 直调</h3><h4 id="真相矩阵"><a href="#真相矩阵" class="headerlink" title="真相矩阵"></a>真相矩阵</h4><table>
+<thead>
+<tr>
+<th>做法</th>
+<th>耦合度</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>levelModule.import(listModule).refresh()</code></td>
+<td>强耦合：编译期依赖</td>
+<td>同模块内、明确的父子关系</td>
+</tr>
+<tr>
+<td><code>GlobalEvent.emit(&#39;LevelCompleted&#39;, &#123;id&#125;)</code></td>
+<td>松耦合：运行时名字约定</td>
+<td>跨模块、跨场景通信</td>
+</tr>
+</tbody></table>
+<h4 id="常见错"><a href="#常见错" class="headerlink" title="常见错"></a>常见错</h4><p><strong>关卡模块</strong>里直接 <code>import LevelListController</code> 然后调 <code>.refresh()</code> —— 以后关卡模块想独立打包（分包）就做不到，因为它硬依赖了列表模块。</p>
+<h4 id="正确做法"><a href="#正确做法" class="headerlink" title="正确做法"></a>正确做法</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 一个全局事件总线（简单场景直接用 EventTarget，复杂的上 mitt/tapable）</span></span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">EventTarget</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;cc&#x27;</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title class_">GameEvent</span> = <span class="keyword">new</span> <span class="title class_">EventTarget</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 关卡模块</span></span><br><span class="line"><span class="title class_">GameEvent</span>.<span class="title function_">emit</span>(<span class="string">&#x27;level-completed&#x27;</span>, &#123; <span class="attr">tableId</span>: <span class="number">101</span>, <span class="attr">stars</span>: <span class="number">3</span> &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 列表模块（不 import 关卡代码）</span></span><br><span class="line"><span class="title function_">onLoad</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title class_">GameEvent</span>.<span class="title function_">on</span>(<span class="string">&#x27;level-completed&#x27;</span>, <span class="variable language_">this</span>.<span class="property">onLevelCompleted</span>, <span class="variable language_">this</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">onDestroy</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="title class_">GameEvent</span>.<span class="title function_">off</span>(<span class="string">&#x27;level-completed&#x27;</span>, <span class="variable language_">this</span>.<span class="property">onLevelCompleted</span>, <span class="variable language_">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>**模块间解耦不是”不通信”，是”通过事件名通信、不互相 import 对方的类互相调用”**。</p>
+<hr>
+<h2 id="8-生产稳定性"><a href="#8-生产稳定性" class="headerlink" title="8. 生产稳定性"></a>8. 生产稳定性</h2><h3 id="8-1-失败自愈-—-state-图闭合"><a href="#8-1-失败自愈-—-state-图闭合" class="headerlink" title="8.1 失败自愈 — state 图闭合"></a>8.1 失败自愈 — state 图闭合</h3><p><strong>原则</strong>：链上每一步失败都能<strong>退回合法状态</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>失败点</th>
+<th>处理</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>assetManager.loadRemote</code> 失败</td>
+<td><code>data[idx].state = 0</code></td>
+<td>重滚回来自然重试</td>
+</tr>
+<tr>
+<td><code>sys.localStorage.setItem</code> 抛异常（超容量）</td>
+<td>try&#x2F;catch 吞错误</td>
+<td>下次 getItem null → 走网络</td>
+</tr>
+<tr>
+<td><code>JSON.parse</code> 抛异常（脏数据）</td>
+<td>catch + <code>removeItem</code></td>
+<td>下次视为没缓存，走网络</td>
+</tr>
+<tr>
+<td>分页 <code>_N.json</code> 404</td>
+<td>视为终点</td>
+<td>停止探页</td>
+</tr>
+<tr>
+<td>idx 快路径不命中（分页追加移位）</td>
+<td>按 tableId <code>findIndex</code></td>
+<td>定位到真实位置继续</td>
+</tr>
+</tbody></table>
+<p><strong>整条链上没有 panic</strong>。任何意外 &#x3D; 退回合法状态。</p>
+<hr>
+<h3 id="8-2-tableId-快路径-fallback"><a href="#8-2-tableId-快路径-fallback" class="headerlink" title="8.2 tableId 快路径 + fallback"></a>8.2 tableId 快路径 + fallback</h3><h4 id="问题-15"><a href="#问题-15" class="headerlink" title="问题"></a>问题</h4><p>发请求时记录 <code>entry.idx=5</code>，下载完成时分页追加已经把这个 item 挤到 idx&#x3D;27。直接用 entry.idx 回写 state → 写到别人身上。</p>
+<h4 id="方案-14"><a href="#方案-14" class="headerlink" title="方案"></a>方案</h4><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> idx = entry.<span class="property">idx</span>;</span><br><span class="line"><span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">data</span>[idx]?.<span class="property">tableId</span> !== entry.<span class="property">tableId</span>) &#123;</span><br><span class="line">    idx = <span class="variable language_">this</span>.<span class="property">data</span>.<span class="title function_">findIndex</span>(<span class="function"><span class="params">d</span> =&gt;</span> d.<span class="property">tableId</span> === entry.<span class="property">tableId</span>);</span><br><span class="line">    <span class="keyword">if</span> (idx &lt; <span class="number">0</span>) <span class="keyword">return</span>;   <span class="comment">// 条目已被移除</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>数据结构冗余</strong>（entry 同时存 idx 和 tableId）换<strong>对”列表变化”的健壮性</strong>。</p>
+<hr>
+<h3 id="8-3-失败上报去重-—-failReportedIds"><a href="#8-3-失败上报去重-—-failReportedIds" class="headerlink" title="8.3 失败上报去重 — failReportedIds"></a>8.3 失败上报去重 — failReportedIds</h3><h4 id="问题-16"><a href="#问题-16" class="headerlink" title="问题"></a>问题</h4><p>一个 URL 坏了 → 回收后滚回来 → 再下 → 再失败 → 再上报 → 死循环里后台埋点被刷爆。</p>
+<h4 id="方案-15"><a href="#方案-15" class="headerlink" title="方案"></a>方案</h4><p>一个 <code>Set&lt;number&gt;</code> 记”这个 tableId 本次会话已上报过失败”：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> failReportedIds = <span class="keyword">new</span> <span class="title class_">Set</span>&lt;<span class="built_in">number</span>&gt;();</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="title function_">traceDownloadFail</span>(<span class="params"><span class="attr">tableId</span>: <span class="built_in">number</span>, <span class="attr">msg</span>?: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">this</span>.<span class="property">failReportedIds</span>.<span class="title function_">has</span>(tableId)) <span class="keyword">return</span>;   <span class="comment">// 同会话同 id 只报一次</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">failReportedIds</span>.<span class="title function_">add</span>(tableId);</span><br><span class="line">    <span class="title class_">Analytics</span>.<span class="title function_">trace</span>(<span class="string">&#x27;AssetDownloadFail&#x27;</span>, &#123; tableId, msg &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>客户端小集合</strong> 换 <strong>后台免雪崩</strong>。</p>
+<hr>
+<h3 id="8-4-埋点全家桶-—-下载链路可观测"><a href="#8-4-埋点全家桶-—-下载链路可观测" class="headerlink" title="8.4 埋点全家桶 — 下载链路可观测"></a>8.4 埋点全家桶 — 下载链路可观测</h3><p>一个生产级列表至少埋这几个点：</p>
+<table>
+<thead>
+<tr>
+<th>埋点</th>
+<th>时机</th>
+<th>记录</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>AssetDownloadStart</code></td>
+<td><code>loadRemote</code> 调用前</td>
+<td>tableId</td>
+</tr>
+<tr>
+<td><code>AssetDownloadSuccess</code></td>
+<td>下载成功、解码前</td>
+<td>tableId, durationMs</td>
+</tr>
+<tr>
+<td><code>AssetDownloadFail</code></td>
+<td>下载失败</td>
+<td>tableId, errorMsg</td>
+</tr>
+<tr>
+<td><code>ListView</code></td>
+<td>进入列表页</td>
+<td>entry source（从哪进来的）</td>
+</tr>
+<tr>
+<td><code>ListItemClick</code></td>
+<td>点击 item</td>
+<td>tableId, success&#x2F;fail</td>
+</tr>
+</tbody></table>
+<p>没埋点的业务 &#x3D; 线上出问题只能看日志猜。<strong>生产项目没商量必上</strong>。</p>
+<p><code>durationMs</code> 从 <code>pendingMap</code> entry 的 <code>startTime</code> 算：<code>Date.now() - entry.startTime</code>。</p>
+<hr>
+<h2 id="9-架构级优化（让前面所有优化都省力）"><a href="#9-架构级优化（让前面所有优化都省力）" class="headerlink" title="9. 架构级优化（让前面所有优化都省力）"></a>9. 架构级优化（让前面所有优化都省力）</h2><h3 id="9-1-三态机-state-0-1-2"><a href="#9-1-三态机-state-0-1-2" class="headerlink" title="9.1 三态机 state: 0 / 1 / 2"></a>9.1 三态机 <code>state: 0 / 1 / 2</code></h3><p>见 4.1。</p>
+<p><strong>为什么值钱</strong>：用一个 <code>number</code> 把”从未下过 &#x2F; 正在下 &#x2F; 已下载 &#x2F; 回收过”四种状态用三个数字表达完，没有 if&#x2F;else 大爆炸。<strong>这是数据结构消除特殊情况的典范</strong>。</p>
+<hr>
+<h3 id="9-2-lastPlayedIndex-—-一个数字一个优化"><a href="#9-2-lastPlayedIndex-—-一个数字一个优化" class="headerlink" title="9.2 lastPlayedIndex — 一个数字一个优化"></a>9.2 lastPlayedIndex — 一个数字一个优化</h3><p>见 2.3。</p>
+<p><strong>哲学</strong>：**”好的优化不是增加代码，是增加一个数字让别人少写代码”**。</p>
+<hr>
+<h3 id="9-3-冗余索引-loadedSet-pendingSet"><a href="#9-3-冗余索引-loadedSet-pendingSet" class="headerlink" title="9.3 冗余索引 loadedSet &#x2F; pendingSet"></a>9.3 冗余索引 loadedSet &#x2F; pendingSet</h3><p>见 3.2 &#x2F; 6.2。</p>
+<p><strong>核心观点</strong>：<strong>信息冗余 &#x3D; 拿空间换时间</strong>。知道下一步只想遍历子集 → 立刻建子集索引，不要指望 <code>filter</code> 扫全表。</p>
+<hr>
+<h3 id="9-4-事件驱动-≠-import-调用"><a href="#9-4-事件驱动-≠-import-调用" class="headerlink" title="9.4 事件驱动 ≠ import 调用"></a>9.4 事件驱动 ≠ <code>import</code> 调用</h3><p>见 7.2。</p>
+<ul>
+<li><strong>坏</strong>：A 模块 <code>import B</code>，调用 <code>b.doSomething()</code></li>
+<li><strong>好</strong>：A 模块 <code>emit</code>，B 模块 <code>on</code></li>
+</ul>
+<h4 id="为什么"><a href="#为什么" class="headerlink" title="为什么"></a>为什么</h4><ul>
+<li><code>import</code> 调用 &#x3D; 编译期强耦合，A 改接口 B 全崩，分包打不开</li>
+<li>事件驱动 &#x3D; 运行时松耦合，只要事件名 + payload 语义不变，双方可独立演进</li>
+</ul>
+<hr>
+<h2 id="10-你该怎么用这份文档"><a href="#10-你该怎么用这份文档" class="headerlink" title="10. 你该怎么用这份文档"></a>10. 你该怎么用这份文档</h2><h3 id="10-1-新做一个”多关卡选择界面”-—-推荐最小组合"><a href="#10-1-新做一个”多关卡选择界面”-—-推荐最小组合" class="headerlink" title="10.1 新做一个”多关卡选择界面” — 推荐最小组合"></a>10.1 新做一个”多关卡选择界面” — 推荐最小组合</h3><p><strong>必做</strong>（跳过就崩盘）：</p>
+<ul>
+<li>2.1 虚拟列表</li>
+<li>4.1 按需下载（三态机）</li>
+<li>4.2 pendingMap 并发去重</li>
+<li>5.1 sys.localStorage 本地缓存</li>
+<li>8.1 失败自愈（状态闭合）</li>
+</ul>
+<p><strong>应做</strong>（N 上量就要）：</p>
+<ul>
+<li>3.1 SpriteFrame&#x2F;Texture 释放</li>
+<li>3.2 保留窗回收（N &gt; 200）</li>
+<li>5.2 prewarmFromLocal（二次启动体验）</li>
+<li>2.3 精修刷新（有二级页面就加）</li>
+</ul>
+<p><strong>可做</strong>（profiler 指出瓶颈再加）：</p>
+<ul>
+<li>2.2 动态图集 &#x2F; Texture2D 字节流（资源是像素图&#x2F;可合成时）</li>
+<li>4.3 分页加载（N &gt; 500）</li>
+<li>5.3 preloadTomorrow（运营上新频繁）</li>
+<li>6.1 节流 &#x2F; 6.3 避免无谓重绘</li>
+<li>7.1 事件源判断</li>
+</ul>
+<p><strong>生产级必备</strong>（线上不崩的底线）：</p>
+<ul>
+<li>8.2 tableId fallback</li>
+<li>8.3 failReportedIds</li>
+<li>8.4 埋点全家桶</li>
+</ul>
+<h3 id="10-2-老界面改造-—-先定位瓶颈再套方案"><a href="#10-2-老界面改造-—-先定位瓶颈再套方案" class="headerlink" title="10.2 老界面改造 — 先定位瓶颈再套方案"></a>10.2 老界面改造 — 先定位瓶颈再套方案</h3><p>打开 Cocos 3.x 内置 Profiler（预览界面右上勾选”显示 FPS”）或者浏览器&#x2F;真机的 performance 面板，看主线程 &#x2F; 内存 &#x2F; 网络三条线：</p>
+<table>
+<thead>
+<tr>
+<th>症状</th>
+<th>优先查</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>主线程忙（FPS 低）</td>
+<td>2.1 虚拟列表 &#x2F; 6.1 节流 &#x2F; 6.3 无谓重绘</td>
+</tr>
+<tr>
+<td>内存涨</td>
+<td>3.1 资源释放 &#x2F; 3.2 回收 &#x2F; 3.3 大数据单例</td>
+</tr>
+<tr>
+<td>Draw Call 高</td>
+<td>2.2 动态图集</td>
+</tr>
+<tr>
+<td>首屏慢</td>
+<td>4.1 按需 &#x2F; 4.3 分页 &#x2F; 5.2 prewarm</td>
+</tr>
+<tr>
+<td>二次启动慢</td>
+<td>5.1 localStorage &#x2F; 5.2 prewarm</td>
+</tr>
+<tr>
+<td>点击&#x2F;返回卡</td>
+<td>2.3 精修 &#x2F; 7.1 事件源判断</td>
+</tr>
+</tbody></table>
+<p><strong>别一次上所有</strong>。每加一个优化之前先问：”这真的是瓶颈吗？”</p>
+<hr>
+<h2 id="11-从零开始的-13-步落地顺序"><a href="#11-从零开始的-13-步落地顺序" class="headerlink" title="11. 从零开始的 13 步落地顺序"></a>11. 从零开始的 13 步落地顺序</h2><p>按<strong>依赖关系</strong>推进，每一步都是下一步的前置。<strong>每步单独部署 + 自检，别跳步</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">1.  LevelData interface + 列表数据源         ← 数据骨架（tableId、name、state）</span><br><span class="line">2.  VirtualList 组件 + ScrollView Prefab     ← 虚拟列表空壳（2.1）</span><br><span class="line">3.  setData 挂真实数据                       ← 首屏静态展示</span><br><span class="line">4.  scrolling → markVisibleItems             ← 滚动触发可见区扫描（4.1）</span><br><span class="line">5.  startBatchLoad                           ← state=1 发 loadRemote（4.2）</span><br><span class="line">6.  onJsonLoaded + decode                    ← 回调入库（4.2 + 2.2）</span><br><span class="line">7.  Texture2D 构造 + SpriteFrame 显示        ← 真图（2.2 + 3.1）</span><br><span class="line">8.  recycleOutOfWindow                       ← 窗外回收（3.2）</span><br><span class="line">9.  sys.localStorage + prewarmFromLocal      ← 本地缓存 + 二次启动（5.1 + 5.2）</span><br><span class="line">10. 点击 item 进关卡 + lastPlayedIndex       ← 进二级页面</span><br><span class="line">11. onReturnFromLevel + renderRow            ← 回家精修（2.3）</span><br><span class="line">12. Pagination                               ← 分页（4.3，生产加）</span><br><span class="line">13. preloadTomorrow + Trace + Throttle       ← 预加载 + 埋点 + 节流（5.3 + 8.4 + 6.1）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="12-常见踩坑清单"><a href="#12-常见踩坑清单" class="headerlink" title="12. 常见踩坑清单"></a>12. 常见踩坑清单</h2><table>
+<thead>
+<tr>
+<th>症状</th>
+<th>可能原因</th>
+<th>对应章节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>滚动时已加载的 item 变灰、松手又恢复</td>
+<td>保留窗 &lt; 可见区，正在可见的被回收</td>
+<td>3.2</td>
+</tr>
+<tr>
+<td>首屏只显示部分 item，滚动后不下载</td>
+<td><code>scrolling</code> 事件没绑 或 <code>setContentSize</code> 没调</td>
+<td>2.1 + 4.1</td>
+</tr>
+<tr>
+<td>回调找不到 entry，UI 卡 state&#x3D;1</td>
+<td><code>pendingMap</code> 用单值而非数组</td>
+<td>4.2</td>
+</tr>
+<tr>
+<td>二次启动仍然全走网络</td>
+<td>prewarm 调在 markVisible 之后</td>
+<td>5.2</td>
+</tr>
+<tr>
+<td>分页追加后 item 显示但不滚</td>
+<td>append 后没重设 <code>content.setContentSize</code></td>
+<td>4.3</td>
+</tr>
+<tr>
+<td>真机内存持续涨不回收</td>
+<td>SpriteFrame 没 <code>decRef/destroy</code></td>
+<td>3.1</td>
+</tr>
+<tr>
+<td>FPS 卡在滚动上</td>
+<td>scrolling 里每帧跑重活，没节流</td>
+<td>6.1</td>
+</tr>
+<tr>
+<td>Draw Call 飙到几百</td>
+<td>没开动态图集或 icon 尺寸超限</td>
+<td>2.2</td>
+</tr>
+<tr>
+<td>点击没反应</td>
+<td>Prefab 里 item 根节点没挂 <code>UITransform</code> 或没调 <code>setContentSize</code></td>
+<td>2.1 + 7.1</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="13-结语"><a href="#13-结语" class="headerlink" title="13. 结语"></a>13. 结语</h2><p><strong>N 关卡选择界面</strong>这个题目，本质是”<strong>如何在有限资源下处理大量同构数据</strong>“ —— 这个问题的解法<strong>不专属于游戏</strong>，也不专属于 Cocos：</p>
+<ul>
+<li>做网页列表：虚拟滚动 + 按需加载 + IndexedDB 缓存 &#x3D; 同一套思路，技术栈不同</li>
+<li>做 Feed 流：分页 + 预加载 + 精修刷新 &#x3D; 同一套思路</li>
+<li>做即时通讯：消息虚拟列表 + 本地存储 + 失败自愈 &#x3D; 同一套思路</li>
+<li>甚至做商城、做装备列表、做成就页 &#x3D; 全都是这一套</li>
+</ul>
+<p>**你学的不是”关卡列表怎么写”，是”大量同构数据 UI 的通用思路”**。</p>
+<hr>
+<h3 id="五条记忆锚点"><a href="#五条记忆锚点" class="headerlink" title="五条记忆锚点"></a>五条记忆锚点</h3><ol>
+<li><strong>数据结构先于算法</strong> —— <code>loadedSet</code> &#x2F; <code>pendingMap</code> &#x2F; <code>lastPlayedIndex</code>，每个优化本质都是换个数据结构</li>
+<li><strong>消除特殊情况</strong> —— 三态机让”回收&#x2F;未下&#x2F;在下”用同一套逻辑，没有 if 大爆炸</li>
+<li><strong>失败 &#x3D; 退回合法状态</strong> —— 任何错误都能回到 state&#x3D;0</li>
+<li><strong>事件驱动不是 import</strong> —— 模块间永远通过事件名通信</li>
+<li><strong>优化是响应瓶颈，不是洁癖</strong> —— 先跑起来测数据，再决定加哪条</li>
+</ol>
+<hr>
+<h3 id="附：本文涉及的所有-Cocos-3-x-API-速查"><a href="#附：本文涉及的所有-Cocos-3-x-API-速查" class="headerlink" title="附：本文涉及的所有 Cocos 3.x API 速查"></a>附：本文涉及的所有 Cocos 3.x API 速查</h3><p><strong>UI &#x2F; 渲染</strong></p>
+<ul>
+<li><code>ScrollView</code> —— <code>getScrollOffset() / &#39;scrolling&#39; / &#39;scroll-ended&#39;</code></li>
+<li><code>UITransform.setContentSize(w, h)</code> —— 设置节点尺寸</li>
+<li><code>instantiate(prefab)</code> —— 克隆节点</li>
+<li><code>Sprite.spriteFrame</code> &#x2F; <code>Label.string</code> —— 显示属性</li>
+<li><code>Texture2D / ImageAsset / SpriteFrame</code> —— 贴图三件套</li>
+<li><code>tex.setFilters(NEAREST, NEAREST)</code> —— 像素图必须</li>
+</ul>
+<p><strong>资源 &#x2F; 网络</strong></p>
+<ul>
+<li><code>resources.load(path, type, cb)</code> —— 包内资源</li>
+<li><code>assetManager.loadRemote(url, cb)</code> —— 远端资源</li>
+<li><code>assetManager.loadBundle(name, cb)</code> —— 分包</li>
+<li><code>sys.localStorage.setItem / getItem / removeItem</code> —— 跨平台 KV</li>
+<li><code>asset.addRef() / decRef() / destroy()</code> —— 资源引用管理</li>
+</ul>
+<p><strong>事件</strong></p>
+<ul>
+<li><code>node.on(type, cb, this, useCapture?)</code> —— 节点事件</li>
+<li><code>EventTarget</code> —— 自定义事件总线</li>
+<li><code>event.propagationStopped = true</code> —— 阻止冒泡</li>
+<li><code>Node.EventType.TOUCH_END / TOUCH_START</code> —— 触摸</li>
+</ul>
+<p><strong>工具</strong></p>
+<ul>
+<li><code>computeVisibleRange(offset, viewport, itemSize, total, buffer)</code> —— 自己写的工具函数</li>
+<li><code>decodePixels(gridSize, palette, rle)</code> —— RLE 解码</li>
+</ul>
+<p>记不住的时候回头翻对应章节，用到一个记一个。<strong>工具不重要，用它解决什么问题才重要</strong>。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Cocos-Creator/" rel="tag"># Cocos Creator</a>
+              <a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/" rel="tag"># 游戏开发</a>
+              <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" rel="tag"># 性能优化</a>
+              <a href="/tags/%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96/" rel="tag"># 列表优化</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/11/25/cocos%E5%AD%A6%E4%B9%A0/%E8%A7%86%E9%A2%91/" rel="prev" title="Cocos Creator 视频系统笔记">
+      <i class="fa fa-chevron-left"></i> Cocos Creator 视频系统笔记
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC82MDk1OC8zNzQyOA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E9%A2%98%E4%BC%9A%E9%9A%BE"><span class="nav-number">1.</span> <span class="nav-text">0. 为什么这题会难</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%85%88%E8%AE%A4%E8%AF%86%E5%87%A0%E4%B8%AA%E5%85%B3%E9%94%AE-API%EF%BC%88%E6%96%B0%E6%89%8B%E5%BF%85%E8%AF%BB%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">1. 先认识几个关键 API（新手必读）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E6%B8%B2%E6%9F%93%E7%9B%B8%E5%85%B3"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 渲染相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E8%B5%84%E6%BA%90%E4%B8%8E%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3"><span class="nav-number">2.2.</span> <span class="nav-text">1.2 资源与网络相关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E4%BA%8B%E4%BB%B6%E7%9B%B8%E5%85%B3"><span class="nav-number">2.3.</span> <span class="nav-text">1.3 事件相关</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%B8%B2%E6%9F%93%E7%93%B6%E9%A2%88"><span class="nav-number">3.</span> <span class="nav-text">2. 渲染瓶颈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E8%99%9A%E6%8B%9F%E5%88%97%E8%A1%A8-%E2%80%94-%E5%8F%AA%E6%B8%B2%E6%9F%93%E5%8F%AF%E8%A7%81%E5%8C%BA"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 虚拟列表 — 只渲染可见区</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">3.1.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88"><span class="nav-number">3.1.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%80%E5%B0%8F%E7%A4%BA%E4%BE%8B%EF%BC%88%E8%99%9A%E6%8B%9F%E5%88%97%E8%A1%A8%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="nav-number">3.1.3.</span> <span class="nav-text">最小示例（虚拟列表组件）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E8%A6%81%E7%82%B9%EF%BC%88%E5%9D%91%E6%8C%87%E5%8D%97%EF%BC%89"><span class="nav-number">3.1.4.</span> <span class="nav-text">关键要点（坑指南）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%8A%A8%E6%80%81%E5%9B%BE%E9%9B%86-Texture2D-%E5%AD%97%E8%8A%82%E6%B5%81-%E2%80%94-%E8%AE%A9-N-%E4%B8%AA-icon-%E5%90%88%E6%89%B9"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 动态图集 &#x2F; Texture2D 字节流 — 让 N 个 icon 合批</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-A%EF%BC%9A%E5%8A%A8%E6%80%81%E5%9B%BE%E9%9B%86%EF%BC%88%E5%AE%98%E6%96%B9%E6%8E%A8%E8%8D%90%EF%BC%8C%E5%90%88%E5%B9%B6%E5%90%8C%E6%9D%90%E8%B4%A8-Sprite%EF%BC%89"><span class="nav-number">3.2.2.</span> <span class="nav-text">方案 A：动态图集（官方推荐，合并同材质 Sprite）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-B%EF%BC%9ATexture2D-%E7%9B%B4%E6%8E%A5%E7%94%BB%E5%AD%97%E8%8A%82%E6%B5%81%EF%BC%88%E9%80%82%E5%90%88%E5%83%8F%E7%B4%A0%E5%9B%BE-%E7%A8%8B%E5%BA%8F%E7%94%9F%E6%88%90%EF%BC%89"><span class="nav-number">3.2.3.</span> <span class="nav-text">方案 B：Texture2D 直接画字节流（适合像素图 &#x2F; 程序生成）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RLE-%E8%A7%A3%E7%A0%81%EF%BC%88%E6%9C%8D%E5%8A%A1%E7%AB%AF%E4%B8%8B%E5%8F%91%E8%B0%83%E8%89%B2%E6%9D%BF-%E7%B4%A2%E5%BC%95%E4%B8%B2%EF%BC%89"><span class="nav-number">3.2.4.</span> <span class="nav-text">RLE 解码（服务端下发调色板 + 索引串）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%80%BC"><span class="nav-number">3.2.5.</span> <span class="nav-text">为什么值</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E7%B2%BE%E4%BF%AE%E5%88%B7%E6%96%B0-%E2%80%94-%E5%8F%AA%E5%88%B7%E9%82%A3%E4%B8%80%E6%A0%BC"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 精修刷新 — 只刷那一格</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-2"><span class="nav-number">3.3.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-1"><span class="nav-number">3.3.2.</span> <span class="nav-text">方案</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%86%85%E5%AD%98%E7%93%B6%E9%A2%88"><span class="nav-number">4.</span> <span class="nav-text">3. 内存瓶颈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-SpriteFrame-Texture2D-%E5%BF%85%E9%A1%BB%E6%89%8B%E5%8A%A8%E9%87%8A%E6%94%BE"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 SpriteFrame &#x2F; Texture2D 必须手动释放</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-3"><span class="nav-number">4.1.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-2"><span class="nav-number">4.1.2.</span> <span class="nav-text">方案</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E4%BF%9D%E7%95%99%E7%AA%97%E5%9B%9E%E6%94%B6-%E2%80%94-%E5%A4%A7%E6%95%B0%E6%8D%AE%E4%B8%BB%E5%8A%A8%E9%87%8A%E6%94%BE"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 保留窗回收 — 大数据主动释放</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-4"><span class="nav-number">4.2.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-3"><span class="nav-number">4.2.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E8%A6%81%E7%82%B9"><span class="nav-number">4.2.3.</span> <span class="nav-text">关键要点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%B0%8F%E6%95%B0%E6%8D%AE%E6%94%BE-Component-%E5%AD%97%E6%AE%B5%EF%BC%8C%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%94%BE%E5%8D%95%E4%BE%8B-Map"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 小数据放 Component 字段，大数据放单例 Map</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-5"><span class="nav-number">4.3.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-4"><span class="nav-number">4.3.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BF%83%E6%B3%95"><span class="nav-number">4.3.3.</span> <span class="nav-text">心法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%BD%91%E7%BB%9C%E7%93%B6%E9%A2%88"><span class="nav-number">5.</span> <span class="nav-text">4. 网络瓶颈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E6%8C%89%E9%9C%80%E4%B8%8B%E8%BD%BD-%E2%80%94-%E6%BB%9A%E5%88%B0%E5%93%AA%E4%B8%8B%E5%88%B0%E5%93%AA"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 按需下载 — 滚到哪下到哪</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%89%E6%80%81%E6%9C%BA"><span class="nav-number">5.1.1.</span> <span class="nav-text">三态机</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2"><span class="nav-number">5.1.2.</span> <span class="nav-text">状态转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%AF%E8%A7%81%E5%8C%BA%E6%89%AB%E6%8F%8F"><span class="nav-number">5.1.3.</span> <span class="nav-text">可见区扫描</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-pendingMap-%E2%80%94-%E6%8C%89-url-%E6%9F%A5%E8%A1%A8%E6%94%AF%E6%8C%81%E5%B9%B6%E5%8F%91%E5%8E%BB%E9%87%8D"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 pendingMap — 按 url 查表支持并发去重</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-6"><span class="nav-number">5.2.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-5"><span class="nav-number">5.2.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C-value-%E6%98%AF%E5%8D%95%E5%80%BC%E4%BC%9A%E6%80%8E%E6%A0%B7"><span class="nav-number">5.2.3.</span> <span class="nav-text">如果 value 是单值会怎样</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-number">5.2.4.</span> <span class="nav-text">示例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E5%88%86%E9%A1%B5%E5%8A%A0%E8%BD%BD-%E2%80%94-%E9%A6%96%E9%A1%B5%E5%85%88%E4%B8%8B-300KB"><span class="nav-number">5.3.</span> <span class="nav-text">4.3 分页加载 — 首页先下 300KB</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-7"><span class="nav-number">5.3.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-6"><span class="nav-number">5.3.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%BD%E5%8A%A0%E6%97%B6%E7%9A%84%E9%99%B7%E9%98%B1"><span class="nav-number">5.3.3.</span> <span class="nav-text">追加时的陷阱</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8E%A2%E9%A1%B5%E5%88%B0-404-%E2%80%94-%E5%88%86%E9%A1%B5%E7%BB%88%E7%82%B9%E7%9A%84%E7%AE%80%E7%BA%A6%E4%BF%A1%E5%8F%B7"><span class="nav-number">5.3.4.</span> <span class="nav-text">探页到 404 — 分页终点的简约信号</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%86%B7%E5%90%AF%E5%8A%A8%E7%93%B6%E9%A2%88"><span class="nav-number">6.</span> <span class="nav-text">5. 冷启动瓶颈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-sys-localStorage-%E2%80%94-%E8%B7%A8%E5%B9%B3%E5%8F%B0-KV"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 sys.localStorage — 跨平台 KV</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-8"><span class="nav-number">6.1.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-7"><span class="nav-number">6.1.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Key-%E5%91%BD%E5%90%8D%E8%A7%84%E8%8C%83"><span class="nav-number">6.1.3.</span> <span class="nav-text">Key 命名规范</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-prewarmLocalCache-%E2%80%94-%E9%A6%96%E5%B1%8F%E9%A2%84%E7%83%AD"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 prewarmLocalCache — 首屏预热</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-9"><span class="nav-number">6.2.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-8"><span class="nav-number">6.2.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E9%A1%BA%E5%BA%8F%EF%BC%88%E7%BB%9D%E5%AF%B9%E4%B8%8D%E8%83%BD%E9%A2%A0%E5%80%92%EF%BC%89"><span class="nav-number">6.2.3.</span> <span class="nav-text">关键顺序（绝对不能颠倒）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-preloadTomorrow-%E2%80%94-%E4%B8%BB%E5%8A%A8%E6%8A%95%E9%80%92%E2%80%9D%E6%98%8E%E5%A4%A9%E2%80%9D"><span class="nav-number">6.3.</span> <span class="nav-text">5.3 preloadTomorrow — 主动投递”明天”</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-10"><span class="nav-number">6.3.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-9"><span class="nav-number">6.3.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%92%8C%E2%80%9D%E8%A2%AB%E5%8A%A8-saveJson%E2%80%9D%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">6.3.3.</span> <span class="nav-text">和”被动 saveJson”的关系</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-CPU-%E7%93%B6%E9%A2%88%EF%BC%88%E9%AB%98%E9%A2%91%E4%BA%8B%E4%BB%B6%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. CPU 瓶颈（高频事件）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-scrolling-%E8%8A%82%E6%B5%81"><span class="nav-number">7.1.</span> <span class="nav-text">6.1 scrolling 节流</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-11"><span class="nav-number">7.1.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-10"><span class="nav-number">7.1.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%8A%82%E6%B5%81-vs-%E9%98%B2%E6%8A%96"><span class="nav-number">7.1.3.</span> <span class="nav-text">节流 vs 防抖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%8A%A0"><span class="nav-number">7.1.4.</span> <span class="nav-text">什么时候加</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-Set-%E4%BB%A3%E6%9B%BF%E6%95%B0%E7%BB%84%E9%81%8D%E5%8E%86-%E2%80%94-%E5%86%97%E4%BD%99%E7%B4%A2%E5%BC%95%E6%8D%A2%E6%97%B6%E9%97%B4"><span class="nav-number">7.2.</span> <span class="nav-text">6.2 Set 代替数组遍历 — 冗余索引换时间</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-12"><span class="nav-number">7.2.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-11"><span class="nav-number">7.2.2.</span> <span class="nav-text">方案</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E9%81%BF%E5%85%8D%E6%97%A0%E8%B0%93%E9%87%8D%E7%BB%98"><span class="nav-number">7.3.</span> <span class="nav-text">6.3 避免无谓重绘</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-13"><span class="nav-number">7.3.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-12"><span class="nav-number">7.3.2.</span> <span class="nav-text">方案</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E7%93%B6%E9%A2%88"><span class="nav-number">8.</span> <span class="nav-text">7. 事件分发瓶颈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E4%BA%8B%E4%BB%B6%E6%BA%90%E5%88%A4%E6%96%AD-%E2%80%94-%E4%B8%8D%E6%98%AF%E7%BB%99%E6%88%91%E7%9A%84%E4%BA%8B%E4%BB%B6%E6%97%A9%E8%BF%94%E5%9B%9E"><span class="nav-number">8.1.</span> <span class="nav-text">7.1 事件源判断 — 不是给我的事件早返回</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-14"><span class="nav-number">8.1.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-13"><span class="nav-number">8.1.2.</span> <span class="nav-text">方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9B%B4%E7%9C%81%E4%BA%8B%E7%9A%84%E5%81%9A%E6%B3%95%EF%BC%9A%E6%8C%89%E8%8A%82%E7%82%B9%E7%BB%91%EF%BC%8C%E4%B8%8D%E6%8C%89%E5%85%A8%E5%B1%80%E7%BB%91"><span class="nav-number">8.1.3.</span> <span class="nav-text">更省事的做法：按节点绑，不按全局绑</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-EventTarget-%E6%80%BB%E7%BA%BF-vs-import-%E7%9B%B4%E8%B0%83"><span class="nav-number">8.2.</span> <span class="nav-text">7.2 EventTarget 总线 vs import 直调</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%9C%9F%E7%9B%B8%E7%9F%A9%E9%98%B5"><span class="nav-number">8.2.1.</span> <span class="nav-text">真相矩阵</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E9%94%99"><span class="nav-number">8.2.2.</span> <span class="nav-text">常见错</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A3%E7%A1%AE%E5%81%9A%E6%B3%95"><span class="nav-number">8.2.3.</span> <span class="nav-text">正确做法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E7%94%9F%E4%BA%A7%E7%A8%B3%E5%AE%9A%E6%80%A7"><span class="nav-number">9.</span> <span class="nav-text">8. 生产稳定性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8-1-%E5%A4%B1%E8%B4%A5%E8%87%AA%E6%84%88-%E2%80%94-state-%E5%9B%BE%E9%97%AD%E5%90%88"><span class="nav-number">9.1.</span> <span class="nav-text">8.1 失败自愈 — state 图闭合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-2-tableId-%E5%BF%AB%E8%B7%AF%E5%BE%84-fallback"><span class="nav-number">9.2.</span> <span class="nav-text">8.2 tableId 快路径 + fallback</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-15"><span class="nav-number">9.2.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-14"><span class="nav-number">9.2.2.</span> <span class="nav-text">方案</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-3-%E5%A4%B1%E8%B4%A5%E4%B8%8A%E6%8A%A5%E5%8E%BB%E9%87%8D-%E2%80%94-failReportedIds"><span class="nav-number">9.3.</span> <span class="nav-text">8.3 失败上报去重 — failReportedIds</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE%E9%A2%98-16"><span class="nav-number">9.3.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%A1%88-15"><span class="nav-number">9.3.2.</span> <span class="nav-text">方案</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-4-%E5%9F%8B%E7%82%B9%E5%85%A8%E5%AE%B6%E6%A1%B6-%E2%80%94-%E4%B8%8B%E8%BD%BD%E9%93%BE%E8%B7%AF%E5%8F%AF%E8%A7%82%E6%B5%8B"><span class="nav-number">9.4.</span> <span class="nav-text">8.4 埋点全家桶 — 下载链路可观测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E6%9E%B6%E6%9E%84%E7%BA%A7%E4%BC%98%E5%8C%96%EF%BC%88%E8%AE%A9%E5%89%8D%E9%9D%A2%E6%89%80%E6%9C%89%E4%BC%98%E5%8C%96%E9%83%BD%E7%9C%81%E5%8A%9B%EF%BC%89"><span class="nav-number">10.</span> <span class="nav-text">9. 架构级优化（让前面所有优化都省力）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#9-1-%E4%B8%89%E6%80%81%E6%9C%BA-state-0-1-2"><span class="nav-number">10.1.</span> <span class="nav-text">9.1 三态机 state: 0 &#x2F; 1 &#x2F; 2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-2-lastPlayedIndex-%E2%80%94-%E4%B8%80%E4%B8%AA%E6%95%B0%E5%AD%97%E4%B8%80%E4%B8%AA%E4%BC%98%E5%8C%96"><span class="nav-number">10.2.</span> <span class="nav-text">9.2 lastPlayedIndex — 一个数字一个优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-3-%E5%86%97%E4%BD%99%E7%B4%A2%E5%BC%95-loadedSet-pendingSet"><span class="nav-number">10.3.</span> <span class="nav-text">9.3 冗余索引 loadedSet &#x2F; pendingSet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-4-%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8-%E2%89%A0-import-%E8%B0%83%E7%94%A8"><span class="nav-number">10.4.</span> <span class="nav-text">9.4 事件驱动 ≠ import 调用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88"><span class="nav-number">10.4.1.</span> <span class="nav-text">为什么</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E4%BD%A0%E8%AF%A5%E6%80%8E%E4%B9%88%E7%94%A8%E8%BF%99%E4%BB%BD%E6%96%87%E6%A1%A3"><span class="nav-number">11.</span> <span class="nav-text">10. 你该怎么用这份文档</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#10-1-%E6%96%B0%E5%81%9A%E4%B8%80%E4%B8%AA%E2%80%9D%E5%A4%9A%E5%85%B3%E5%8D%A1%E9%80%89%E6%8B%A9%E7%95%8C%E9%9D%A2%E2%80%9D-%E2%80%94-%E6%8E%A8%E8%8D%90%E6%9C%80%E5%B0%8F%E7%BB%84%E5%90%88"><span class="nav-number">11.1.</span> <span class="nav-text">10.1 新做一个”多关卡选择界面” — 推荐最小组合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-2-%E8%80%81%E7%95%8C%E9%9D%A2%E6%94%B9%E9%80%A0-%E2%80%94-%E5%85%88%E5%AE%9A%E4%BD%8D%E7%93%B6%E9%A2%88%E5%86%8D%E5%A5%97%E6%96%B9%E6%A1%88"><span class="nav-number">11.2.</span> <span class="nav-text">10.2 老界面改造 — 先定位瓶颈再套方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-%E4%BB%8E%E9%9B%B6%E5%BC%80%E5%A7%8B%E7%9A%84-13-%E6%AD%A5%E8%90%BD%E5%9C%B0%E9%A1%BA%E5%BA%8F"><span class="nav-number">12.</span> <span class="nav-text">11. 从零开始的 13 步落地顺序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#12-%E5%B8%B8%E8%A7%81%E8%B8%A9%E5%9D%91%E6%B8%85%E5%8D%95"><span class="nav-number">13.</span> <span class="nav-text">12. 常见踩坑清单</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#13-%E7%BB%93%E8%AF%AD"><span class="nav-number">14.</span> <span class="nav-text">13. 结语</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%94%E6%9D%A1%E8%AE%B0%E5%BF%86%E9%94%9A%E7%82%B9"><span class="nav-number">14.1.</span> <span class="nav-text">五条记忆锚点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%99%84%EF%BC%9A%E6%9C%AC%E6%96%87%E6%B6%89%E5%8F%8A%E7%9A%84%E6%89%80%E6%9C%89-Cocos-3-x-API-%E9%80%9F%E6%9F%A5"><span class="nav-number">14.2.</span> <span class="nav-text">附：本文涉及的所有 Cocos 3.x API 速查</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="addqi"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">addqi</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://github.com/" title="https:&#x2F;&#x2F;github.com" rel="noopener" target="_blank">github</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://gitee.com/" title="https:&#x2F;&#x2F;gitee.com" rel="noopener" target="_blank">gitee</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/" title="https:&#x2F;&#x2F;blog.csdn.net" rel="noopener" target="_blank">csdn</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://space.bilibili.com/" title="https:&#x2F;&#x2F;space.bilibili.com" rel="noopener" target="_blank">bilibili</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/" title="https:&#x2F;&#x2F;www.zhihu.com" rel="noopener" target="_blank">知乎</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://juejin.im/" title="https:&#x2F;&#x2F;juejin.im" rel="noopener" target="_blank">稀土掘金</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.jianshu.com/" title="https:&#x2F;&#x2F;www.jianshu.com" rel="noopener" target="_blank">简书</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2025/10/15 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">addqi</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">53k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">48 分钟</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
