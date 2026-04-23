@@ -22,17 +22,19 @@
     var CONFIG = {"hostname":"addqi.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post"},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="正文稍后补充。">
+  <meta name="description" content="给完全没用过 MCP 的新人看。 读完你能做到：在 Chrome 里打开 Cocos 预览页，对 AI 说「看看报错」，AI 自己读 console，而不是你复制粘贴。 全程大约 10 分钟。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="如何让 Cursor 读取浏览器">
+<meta property="og:title" content="如何让 AI 读取浏览器（从零到一）">
 <meta property="og:url" content="https://addqi.github.io/2026/04/23/cursor%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7/%E5%A6%82%E4%BD%95%E8%AE%A9Cursor%E8%AF%BB%E5%8F%96%E6%B5%8F%E8%A7%88%E5%99%A8/index.html">
 <meta property="og:site_name" content="addqi的游戏开发之旅">
-<meta property="og:description" content="正文稍后补充。">
+<meta property="og:description" content="给完全没用过 MCP 的新人看。 读完你能做到：在 Chrome 里打开 Cocos 预览页，对 AI 说「看看报错」，AI 自己读 console，而不是你复制粘贴。 全程大约 10 分钟。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-04-23T08:00:00.000Z">
-<meta property="article:modified_time" content="2026-04-23T07:48:43.270Z">
+<meta property="article:modified_time" content="2026-04-23T07:56:19.182Z">
 <meta property="article:author" content="addqi">
 <meta property="article:tag" content="Cursor">
+<meta property="article:tag" content="MCP">
+<meta property="article:tag" content="browser-tools">
 <meta property="article:tag" content="AI 编程">
 <meta property="article:tag" content="工作流">
 <meta name="twitter:card" content="summary">
@@ -50,7 +52,7 @@
   };
 </script>
 
-  <title>如何让 Cursor 读取浏览器 | addqi的游戏开发之旅</title>
+  <title>如何让 AI 读取浏览器（从零到一） | addqi的游戏开发之旅</title>
   
 
 
@@ -193,7 +195,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          如何让 Cursor 读取浏览器
+          如何让 AI 读取浏览器（从零到一）
         </h1>
 
         <div class="post-meta">
@@ -204,7 +206,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2026-04-23 16:00:00 / 修改时间：15:48:43" itemprop="dateCreated datePublished" datetime="2026-04-23T16:00:00+08:00">2026-04-23</time>
+              <time title="创建时间：2026-04-23 16:00:00 / 修改时间：15:56:19" itemprop="dateCreated datePublished" datetime="2026-04-23T16:00:00+08:00">2026-04-23</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -222,14 +224,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>111</span>
+              <span>4.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>4 分钟</span>
             </span>
 
         </div>
@@ -242,17 +244,281 @@
 
       
         <blockquote>
-<p>正文稍后补充。</p>
+<p>给完全没用过 MCP 的新人看。</p>
+<p><strong>读完你能做到</strong>：在 Chrome 里打开 Cocos 预览页，对 AI 说「看看报错」，AI 自己读 console，而不是你复制粘贴。</p>
+<p>全程大约 10 分钟。</p>
 </blockquote>
 <span id="more"></span>
 
-<p>待写内容提纲：</p>
-<ol>
-<li>为什么需要让 Cursor 读取浏览器（看控制台报错、拿 DOM、自动化验证 UI）</li>
-<li>几种可行方案对比（Browser MCP &#x2F; DevTools 协议 &#x2F; 截图 + 多模态）</li>
-<li>最推荐的落地步骤</li>
-<li>常见坑</li>
+<hr>
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ol>
+<li><a href="#1-%E4%BB%80%E4%B9%88%E6%98%AF-mcp">什么是 MCP？</a></li>
+<li><a href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E8%A3%85%E8%BF%99%E4%B8%AA">为什么要装这个？</a></li>
+<li><a href="#3-%E8%BF%99%E5%A5%97%E4%B8%9C%E8%A5%BF%E7%94%B1%E5%87%A0%E9%83%A8%E5%88%86%E7%BB%84%E6%88%90">这套东西由几部分组成？</a></li>
+<li><a href="#4-%E5%8A%A8%E6%89%8B%E8%A3%85%E5%88%86-6-%E6%AD%A5">动手装（分 6 步）</a></li>
+<li><a href="#5-%E6%80%8E%E4%B9%88%E7%94%A8%E5%AE%83">怎么用它</a></li>
+<li><a href="#6-%E8%83%BD%E5%81%9A%E4%BB%80%E4%B9%88%E8%83%BD%E5%8A%9B%E6%B8%85%E5%8D%95">能做什么（能力清单）</a></li>
+<li><a href="#7-%E5%B8%B8%E8%A7%81%E5%9D%91">常见坑</a></li>
+<li><a href="#8-%E5%AE%89%E5%85%A8%E6%8F%90%E9%86%92">安全提醒</a></li>
+<li><a href="#9-%E6%9C%AC%E9%A1%B9%E7%9B%AE%E7%89%B9%E5%88%AB%E8%AF%B4%E6%98%8E">本项目特别说明</a></li>
 </ol>
+<hr>
+<h2 id="1-什么是-MCP？"><a href="#1-什么是-MCP？" class="headerlink" title="1. 什么是 MCP？"></a>1. 什么是 MCP？</h2><p><strong>一句话：MCP（Model Context Protocol）是给 AI 装”插件”的标准接口。</strong></p>
+<p>打个比方：</p>
+<ul>
+<li>电脑有 <strong>USB 接口</strong>，你能插鼠标、U 盘、打印机。</li>
+<li>Cursor 里的 AI 有 <strong>MCP 接口</strong>，你能插各种「能力」：读数据库、操作 Git、控制浏览器……</li>
+</ul>
+<p>AI 本身只会<strong>说话</strong>。装了 MCP，它就能<strong>动手</strong>——前提是你先给它装好工具。</p>
+<p>本文档要装的工具叫 **<code>browser-tools-mcp</code>**。它让 AI 能读浏览器里的 console、network、截图。</p>
+<hr>
+<h2 id="2-为什么要装这个？"><a href="#2-为什么要装这个？" class="headerlink" title="2. 为什么要装这个？"></a>2. 为什么要装这个？</h2><p><strong>没装之前</strong>：</p>
+<blockquote>
+<p>你：这个报错你看一下<br>你：（打开 Chrome → F12 → 复制 Console → 粘贴到对话框）<br>你：（再去 Network → 截图或复制失败请求）</p>
+</blockquote>
+<p><strong>装了之后</strong>：</p>
+<blockquote>
+<p>你：看看当前页 console 和 network 的报错<br>AI：（自己去读）好的，我看到一个 404，URL 是 ……</p>
+</blockquote>
+<p><strong>省掉的是你的手</strong>。</p>
+<hr>
+<h2 id="3-这套东西由几部分组成？"><a href="#3-这套东西由几部分组成？" class="headerlink" title="3. 这套东西由几部分组成？"></a>3. 这套东西由几部分组成？</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────┐   ①                ┌─────────────┐</span><br><span class="line">│   Cursor    │  ──调工具──►       │   MCP 包     │   ← 第 1 个</span><br><span class="line">│   里的 AI   │                    │ (在 Cursor  │</span><br><span class="line">└─────────────┘                    │   里跑)     │</span><br><span class="line">                                   └──────┬──────┘</span><br><span class="line">                                          │ ② HTTP</span><br><span class="line">                                          ▼</span><br><span class="line">                                   ┌─────────────┐</span><br><span class="line">                                   │   Server    │   ← 第 2 个</span><br><span class="line">                                   │ (你终端里   │</span><br><span class="line">                                   │  常驻进程)  │</span><br><span class="line">                                   └──────┬──────┘</span><br><span class="line">                                          │ ③ WebSocket</span><br><span class="line">                                          ▼</span><br><span class="line">                                   ┌─────────────┐</span><br><span class="line">                                   │ Chrome 扩展 │   ← 第 3 个</span><br><span class="line">                                   │ (浏览器里   │</span><br><span class="line">                                   │  DevTools) │</span><br><span class="line">                                   └──────┬──────┘</span><br><span class="line">                                          │</span><br><span class="line">                                          ▼</span><br><span class="line">                                   你要调试的网页</span><br><span class="line">                                   (如 localhost:7456)</span><br></pre></td></tr></table></figure>
+
+<p><strong>三个都要装。少一个都用不了。</strong></p>
+<ul>
+<li><strong>MCP 包</strong>：告诉 Cursor「我这里有工具可以用」</li>
+<li><strong>Server</strong>：中间协调员，本地常驻</li>
+<li><strong>Chrome 扩展</strong>：真正进到浏览器里抓数据的那个</li>
+</ul>
+<hr>
+<h2 id="4-动手装（分-6-步）"><a href="#4-动手装（分-6-步）" class="headerlink" title="4. 动手装（分 6 步）"></a>4. 动手装（分 6 步）</h2><h3 id="4-1-下载-Chrome-扩展源码"><a href="#4-1-下载-Chrome-扩展源码" class="headerlink" title="4.1 下载 Chrome 扩展源码"></a>4.1 下载 Chrome 扩展源码</h3><p>打开 <a target="_blank" rel="noopener" href="https://github.com/AgentDeskAI/browser-tools-mcp">AgentDeskAI&#x2F;browser-tools-mcp</a>，点 <strong>Code → Download ZIP</strong>，下载后解压。</p>
+<p>解压后长这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">browser-tools-mcp-main/</span><br><span class="line">├── browser-tools-mcp/      ← MCP 包源码（不用管，我们用 npm 上的）</span><br><span class="line">├── browser-tools-server/   ← Server 源码（不用管，我们用 npm 上的）</span><br><span class="line">├── chrome-extension/       ← ⭐ 就用这个</span><br><span class="line">├── docs/</span><br><span class="line">├── LICENSE</span><br><span class="line">└── README.md</span><br></pre></td></tr></table></figure>
+
+<p><strong>记住：你只要用 <code>chrome-extension/</code> 这一个子目录。</strong></p>
+<h3 id="4-2-安装-Chrome-扩展"><a href="#4-2-安装-Chrome-扩展" class="headerlink" title="4.2 安装 Chrome 扩展"></a>4.2 安装 Chrome 扩展</h3><ol>
+<li>Chrome 地址栏打开 <code>chrome://extensions/</code></li>
+<li>右上角开启 <strong>「开发者模式」</strong></li>
+<li>点 <strong>「加载已解压的扩展程序」</strong></li>
+<li><strong>选 <code>chrome-extension/</code> 这个目录本身</strong>（Finder 里让它高亮，按「选择」）</li>
+</ol>
+<p>✅ <strong>成功标志</strong>：扩展列表里出现 <strong>BrowserTools MCP</strong> 条目，无红色错误。</p>
+<p>❌ <strong>常见错误</strong>：报「清单文件缺失」&#x3D; 选错目录了（多半选成了仓库根 <code>browser-tools-mcp-main/</code>）。重来，选 <code>chrome-extension/</code>。</p>
+<h3 id="4-3-启动-Server"><a href="#4-3-启动-Server" class="headerlink" title="4.3 启动 Server"></a>4.3 启动 Server</h3><p>打开一个终端，跑：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx @agentdeskai/browser-tools-server@1.2.0</span><br></pre></td></tr></table></figure>
+
+<p>首次运行会提示 <code>Ok to proceed?</code>，按 <strong>y</strong> 回车。</p>
+<blockquote>
+<p><strong><code>npx</code> 是啥</strong>：Node.js 自带的临时运行器。它会自动去 npm 上拉这个包并跑起来。用它不用先 <code>npm install</code>。</p>
+</blockquote>
+<p>✅ <strong>成功标志</strong>：终端里出现</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">=== Browser Tools Server Started ===</span><br><span class="line">Aggregator listening on http://0.0.0.0:3025</span><br></pre></td></tr></table></figure>
+
+<p><code>3025</code> 是默认端口。<strong>这个终端窗口不能关，关了链路就断。</strong> 建议单独开一个 tab 常驻。</p>
+<blockquote>
+<p>**为什么不用 <code>@latest</code>**：三个部件版本最好一致，避免协议对不上。扩展是什么版本（见 <code>chrome-extension/manifest.json</code> 里的 <code>version</code>），Server 就用什么版本。</p>
+</blockquote>
+<h3 id="4-4-配置-Cursor-MCP"><a href="#4-4-配置-Cursor-MCP" class="headerlink" title="4.4 配置 Cursor MCP"></a>4.4 配置 Cursor MCP</h3><p>Cursor 的 MCP 配置文件在：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">~/.cursor/mcp.json</span><br></pre></td></tr></table></figure>
+
+<p>（<code>~</code> 是你的用户目录，macOS 下就是 <code>/Users/你的用户名/</code>。文件不存在就新建。）</p>
+<p>内容写成：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;mcpServers&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;browser-tools&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;command&quot;</span><span class="punctuation">:</span> <span class="string">&quot;npx&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;args&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;@agentdeskai/browser-tools-mcp@1.2.0&quot;</span><span class="punctuation">]</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>如果里面已经有别的 MCP，只加 <code>&quot;browser-tools&quot;</code> 这一项就行，JSON 逗号别写错。</p>
+</blockquote>
+<p>保存后 <strong>重启 Cursor</strong>（或在 Settings → MCP 面板里重新加载）。</p>
+<p>✅ <strong>成功标志</strong>：Cursor 设置 → MCP 面板里能看到 <code>browser-tools</code>，底下列出若干工具（约 14 个）。</p>
+<h3 id="4-5-在-DevTools-里激活面板（最容易漏）"><a href="#4-5-在-DevTools-里激活面板（最容易漏）" class="headerlink" title="4.5 在 DevTools 里激活面板（最容易漏）"></a>4.5 在 DevTools 里激活面板（最容易漏）</h3><p>⚠️ <strong>重点</strong>：前面三步都做完还<strong>不够</strong>。Chrome 扩展要<strong>你打开 DevTools 并点开它那个面板</strong>时才会去连 Server。</p>
+<p>操作：</p>
+<ol>
+<li><p>Chrome 打开要调试的网页（如 <code>http://localhost:7456/</code>，Cocos Web 预览的默认地址）</p>
+</li>
+<li><p>按 <strong>F12</strong>（或右键 → 检查）打开开发者工具</p>
+</li>
+<li><p>DevTools 顶部标签栏（Console &#x2F; Network &#x2F; Elements 那一排）找到 <strong>「BrowserToolsMCP」</strong>，<strong>点一下</strong>让它成为当前面板</p>
+</li>
+<li><p>面板里应显示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Connected successfully to browser-tools-server v1.2.0 at localhost:3025</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>❌ <strong>看不到这行</strong>：</p>
+<ul>
+<li>面板没点开 → 点</li>
+<li>Server 没起 → 回 4.3</li>
+<li>扩展没刷新 → <code>chrome://extensions/</code> 对该扩展点刷新图标，再刷新网页</li>
+</ul>
+<h3 id="4-6-终极验证"><a href="#4-6-终极验证" class="headerlink" title="4.6 终极验证"></a>4.6 终极验证</h3><p>在 Cursor 对话框（<strong>Agent 模式下</strong>，下节讲）输入：</p>
+<blockquote>
+<p>看看当前页面的 console 日志</p>
+</blockquote>
+<p>AI 应该调 <code>getConsoleLogs</code> 工具并返回一个 JSON 数组。同时你的 Server 终端里<strong>不应该再出现</strong> <code>No active WebSocket connection</code>。</p>
+<p>能看到日志 &#x3D; 全通了。</p>
+<hr>
+<h2 id="5-怎么用它"><a href="#5-怎么用它" class="headerlink" title="5. 怎么用它"></a>5. 怎么用它</h2><h3 id="5-1-必须在-Agent-模式"><a href="#5-1-必须在-Agent-模式" class="headerlink" title="5.1 必须在 Agent 模式"></a>5.1 必须在 Agent 模式</h3><p>Cursor 有两种模式：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Ask</strong></td>
+<td>AI 只能说话，<strong>不能调工具</strong></td>
+</tr>
+<tr>
+<td><strong>Agent</strong></td>
+<td>AI 可以调工具</td>
+</tr>
+</tbody></table>
+<p>让 AI 读浏览器，<strong>必须切到 Agent 模式</strong>。切换按钮在对话框附近。</p>
+<h3 id="5-2-用-把本文档丢进上下文"><a href="#5-2-用-把本文档丢进上下文" class="headerlink" title="5.2 用 @ 把本文档丢进上下文"></a>5.2 用 <code>@</code> 把本文档丢进上下文</h3><p>在对话框输入 **<code>@</code>**，搜 <code>teach/ai-browser-tools</code>，选中本目录或 <code>README.md</code>。</p>
+<p>AI 之后的排查就会按这份文档的规范来。</p>
+<h3 id="5-3-典型话术"><a href="#5-3-典型话术" class="headerlink" title="5.3 典型话术"></a>5.3 典型话术</h3><ul>
+<li>「看当前页面 console 的报错」</li>
+<li>「把 network 里失败的请求列出来」</li>
+<li>「截当前页的图给我看」</li>
+<li>「跑一下性能审计」（Lighthouse）</li>
+<li>「我在 Elements 里选中了这个节点，给我它的信息」</li>
+</ul>
+<h3 id="5-4-MCP-不能替你刷新"><a href="#5-4-MCP-不能替你刷新" class="headerlink" title="5.4 MCP 不能替你刷新"></a>5.4 MCP 不能替你刷新</h3><p>这套工具<strong>没有「帮你刷新页面」的能力</strong>。刷新用 <strong>Cmd+R &#x2F; F5</strong>，然后让 AI 再拉一次日志或截图。</p>
+<hr>
+<h2 id="6-能做什么（能力清单）"><a href="#6-能做什么（能力清单）" class="headerlink" title="6. 能做什么（能力清单）"></a>6. 能做什么（能力清单）</h2><p>装通后 AI 可以调用的工具（约 14 个）：</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>getConsoleLogs</code></td>
+<td>当前页所有 console 输出</td>
+</tr>
+<tr>
+<td><code>getConsoleErrors</code></td>
+<td>只要 error 级别</td>
+</tr>
+<tr>
+<td><code>getNetworkLogs</code></td>
+<td>所有网络请求</td>
+</tr>
+<tr>
+<td><code>getNetworkErrors</code></td>
+<td>只要失败的请求（4xx&#x2F;5xx）</td>
+</tr>
+<tr>
+<td><code>takeScreenshot</code></td>
+<td>截当前标签</td>
+</tr>
+<tr>
+<td><code>getSelectedElement</code></td>
+<td>你在 Elements 里选中的 DOM</td>
+</tr>
+<tr>
+<td><code>runPerformanceAudit</code></td>
+<td>性能审计（Lighthouse）</td>
+</tr>
+<tr>
+<td><code>runAccessibilityAudit</code></td>
+<td>无障碍审计</td>
+</tr>
+<tr>
+<td><code>runSEOAudit</code></td>
+<td>SEO 审计</td>
+</tr>
+<tr>
+<td><code>runBestPracticesAudit</code></td>
+<td>最佳实践审计</td>
+</tr>
+<tr>
+<td><code>runDebuggerMode</code></td>
+<td>综合调试模式（组合多个工具）</td>
+</tr>
+<tr>
+<td><code>runAuditMode</code></td>
+<td>一次性跑所有审计</td>
+</tr>
+<tr>
+<td><code>wipeLogs</code></td>
+<td>清缓冲，方便复现</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-常见坑"><a href="#7-常见坑" class="headerlink" title="7. 常见坑"></a>7. 常见坑</h2><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>加载扩展报「清单文件缺失」</td>
+<td>选错目录</td>
+<td>选 <code>chrome-extension/</code> 子目录</td>
+</tr>
+<tr>
+<td>截图报 <code>Chrome extension not connected</code></td>
+<td>DevTools 面板没开</td>
+<td>F12 打开，点 BrowserToolsMCP 面板</td>
+</tr>
+<tr>
+<td>Server 日志持续 <code>Active WebSocket: false</code></td>
+<td>同上</td>
+<td>打开面板；或到 <code>chrome://extensions/</code> 刷新扩展再开面板</td>
+</tr>
+<tr>
+<td><code>getConsoleLogs</code> 返回 <code>[]</code></td>
+<td>真的没输出；或连接未建立</td>
+<td>先确认 <code>Connected</code>，在页面操作后再拉</td>
+</tr>
+<tr>
+<td>Cursor 里看不到 <code>browser-tools</code> MCP</td>
+<td><code>mcp.json</code> 没生效</td>
+<td>检查 JSON 语法，重启 Cursor</td>
+</tr>
+<tr>
+<td>工具调用报「Ask 模式不允许」</td>
+<td>没切 Agent</td>
+<td>切 Agent 模式重试</td>
+</tr>
+<tr>
+<td><code>npx</code> 装不上包</td>
+<td>网络问题</td>
+<td>检查网络，或换国内 npm 源</td>
+</tr>
+<tr>
+<td>面板写 v1.2.0、终端装了 1.2.1</td>
+<td>小版本不一致</td>
+<td>能用就不管；若连不上，把 Server 也锁 <code>@1.2.0</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="8-安全提醒"><a href="#8-安全提醒" class="headerlink" title="8. 安全提醒"></a>8. 安全提醒</h2><ul>
+<li>Server 默认监听 <strong><code>0.0.0.0:3025</code><strong>，</strong>同局域网内其他机器</strong>可能能访问。仅在可信网络（自家 Wi-Fi、公司内网）使用，<strong>公共 Wi-Fi 请关掉</strong>。</li>
+<li>扩展有 <code>debugger</code>、<code>&lt;all_urls&gt;</code> 等权限，<strong>能读任何网页</strong>的 DOM、网络、console。不调试时建议<strong>停用扩展</strong>，或至少<strong>不要在处理机密&#x2F;网银&#x2F;登录态的页面</strong>上打开 DevTools 面板。</li>
+<li>贴日志给别人看时注意：<strong>URL 参数里常带 token、cookie、gclid</strong>，别直接公开。</li>
+</ul>
+<hr>
+<h2 id="9-本项目特别说明"><a href="#9-本项目特别说明" class="headerlink" title="9. 本项目特别说明"></a>9. 本项目特别说明</h2><p><strong>能用到的场景</strong>：</p>
+<ul>
+<li>✅ Cocos Creator 的 <strong>Web 预览</strong>（如 <code>http://localhost:7456/</code>）是真 Chrome，扩展能用</li>
+<li>✅ 调整 UI 渲染、追 <code>ReadJsonAsset</code> 失败、看 network 404</li>
+</ul>
+<p><strong>用不了的场景</strong>：</p>
+<ul>
+<li>❌ Cocos Creator <strong>编辑器内嵌预览</strong>（Electron 不是 Chrome，装不上扩展）</li>
+<li>❌ 打包后的原生 App &#x2F; 小游戏容器</li>
+</ul>
+<p><strong>常见误判</strong>：</p>
+<ul>
+<li>日志里 <strong><code>[AtomEngine] 进入后台 / 恢复前台</code></strong> 成对出现，是 visibility 事件——切标签、DevTools 抢焦点都会触发，<strong>不是 bug</strong>。</li>
+<li><strong>远程 <code>ReadJsonAsset</code> 404</strong> 这类错误，根因在 CDN &#x2F; 资源发布或路径配置，不是 Browser Tools 的问题。本工具只负责<strong>让你更快看到</strong>这种错误。</li>
+</ul>
+<hr>
+<h2 id="一句话总结"><a href="#一句话总结" class="headerlink" title="一句话总结"></a>一句话总结</h2><p><strong>三件套装齐 → DevTools 里看到 <code>Connected</code> → Cursor 切 Agent 模式 → <code>@teach/ai-browser-tools</code> 引用本文档 → 对 AI 说话就行。</strong></p>
 
     </div>
 
@@ -263,6 +529,8 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/Cursor/" rel="tag"># Cursor</a>
+              <a href="/tags/MCP/" rel="tag"># MCP</a>
+              <a href="/tags/browser-tools/" rel="tag"># browser-tools</a>
               <a href="/tags/AI-%E7%BC%96%E7%A8%8B/" rel="tag"># AI 编程</a>
               <a href="/tags/%E5%B7%A5%E4%BD%9C%E6%B5%81/" rel="tag"># 工作流</a>
           </div>
@@ -340,6 +608,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95"><span class="nav-number">1.</span> <span class="nav-text">目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF-MCP%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">1. 什么是 MCP？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E8%A3%85%E8%BF%99%E4%B8%AA%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">2. 为什么要装这个？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%BF%99%E5%A5%97%E4%B8%9C%E8%A5%BF%E7%94%B1%E5%87%A0%E9%83%A8%E5%88%86%E7%BB%84%E6%88%90%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">3. 这套东西由几部分组成？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%8A%A8%E6%89%8B%E8%A3%85%EF%BC%88%E5%88%86-6-%E6%AD%A5%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. 动手装（分 6 步）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E4%B8%8B%E8%BD%BD-Chrome-%E6%89%A9%E5%B1%95%E6%BA%90%E7%A0%81"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 下载 Chrome 扩展源码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%AE%89%E8%A3%85-Chrome-%E6%89%A9%E5%B1%95"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 安装 Chrome 扩展</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E5%90%AF%E5%8A%A8-Server"><span class="nav-number">5.3.</span> <span class="nav-text">4.3 启动 Server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-%E9%85%8D%E7%BD%AE-Cursor-MCP"><span class="nav-number">5.4.</span> <span class="nav-text">4.4 配置 Cursor MCP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-%E5%9C%A8-DevTools-%E9%87%8C%E6%BF%80%E6%B4%BB%E9%9D%A2%E6%9D%BF%EF%BC%88%E6%9C%80%E5%AE%B9%E6%98%93%E6%BC%8F%EF%BC%89"><span class="nav-number">5.5.</span> <span class="nav-text">4.5 在 DevTools 里激活面板（最容易漏）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-%E7%BB%88%E6%9E%81%E9%AA%8C%E8%AF%81"><span class="nav-number">5.6.</span> <span class="nav-text">4.6 终极验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%80%8E%E4%B9%88%E7%94%A8%E5%AE%83"><span class="nav-number">6.</span> <span class="nav-text">5. 怎么用它</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%BF%85%E9%A1%BB%E5%9C%A8-Agent-%E6%A8%A1%E5%BC%8F"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 必须在 Agent 模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E7%94%A8-%E6%8A%8A%E6%9C%AC%E6%96%87%E6%A1%A3%E4%B8%A2%E8%BF%9B%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 用 @ 把本文档丢进上下文</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E5%85%B8%E5%9E%8B%E8%AF%9D%E6%9C%AF"><span class="nav-number">6.3.</span> <span class="nav-text">5.3 典型话术</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-MCP-%E4%B8%8D%E8%83%BD%E6%9B%BF%E4%BD%A0%E5%88%B7%E6%96%B0"><span class="nav-number">6.4.</span> <span class="nav-text">5.4 MCP 不能替你刷新</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%83%BD%E5%81%9A%E4%BB%80%E4%B9%88%EF%BC%88%E8%83%BD%E5%8A%9B%E6%B8%85%E5%8D%95%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. 能做什么（能力清单）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%B8%B8%E8%A7%81%E5%9D%91"><span class="nav-number">8.</span> <span class="nav-text">7. 常见坑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E5%AE%89%E5%85%A8%E6%8F%90%E9%86%92"><span class="nav-number">9.</span> <span class="nav-text">8. 安全提醒</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E6%9C%AC%E9%A1%B9%E7%9B%AE%E7%89%B9%E5%88%AB%E8%AF%B4%E6%98%8E"><span class="nav-number">10.</span> <span class="nav-text">9. 本项目特别说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93"><span class="nav-number">11.</span> <span class="nav-text">一句话总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -364,7 +633,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">22</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -428,12 +697,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">53k</span>
+    <span title="站点总字数">58k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">49 分钟</span>
+    <span title="站点阅读时长">53 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
